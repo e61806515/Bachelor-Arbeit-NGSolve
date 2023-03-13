@@ -23,7 +23,7 @@ import math as math
 #                       (inner)
 
 def MakeGeometry(d_M, d_Fe, d_L, D, tau_p):
-        b = np.pi/2*D
+        b = np.pi/2 * D
         b_M = b*tau_p
         
         #Add points to geometry
@@ -78,7 +78,7 @@ coef_dirichlet = CF([0,0,0,0,0,0,0,0,0,0,0,0])
 #bnd_dir = {"air_left" : 0, "air_right" : 0, "inner" : 0}
 #bndCF = CF([bnd_dir[bnd] for bnd in mesh.GetBoundaries()])
 
-V = H1(mesh, order = 2, dirichlet = "air_left|air_right|rotor", complex=True)
+V = H1(mesh, order = 2, dirichlet = "air_left|air_right|inner", complex=True)
 
 #print(V)
 
@@ -88,13 +88,16 @@ u = GridFunction(V)
 
 a = BilinearForm(V, symmetric = True)
 a +=  1/mu*grad(trial)*grad(test) * dx
-a += 1j*omega*sigmaCF*test.Trace() * trial.Trace() * dx#("rotor|magnet|air") 1j*
+a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
 
 c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
 
 f = LinearForm(V)
-f += K0*sin(2/D*x)*test.Trace()*dx("outer") # set neumann #*sin(2/D*x)
-u.Set(coef_dirichlet, BND)
+f += K0*sin((2/D)*x)*test.Trace()*ds("outer")     # set neumann .. macht das Sinn? ...
+                                                        #Wir wollen am oberen Neumann-Rand 
+# .Trace() reduziert Domain-funktionen auf die Grenzen. Bei "ds"-Integralen sinnvoll. 
+#"dx" für VOL-Integrale, "ds" für Surface-Integrale
+u.Set(coef_dirichlet, BND) #Wird ohne bvp-solver überschrieben wenn inhomogene BC
 
 #u.Set(bndCF, BND) # set the drc bnds
 #solver
@@ -102,19 +105,22 @@ u.Set(coef_dirichlet, BND)
 with TaskManager():
         a.Assemble()
         f.Assemble()
-        #bvp = BVP(bf=a, lf=f, gf=u, pre=c)
-       # bvp.Do()
+        bvp = BVP(bf=a, lf=f, gf=u, pre=c)
+        bvp.Do()
 
-u.vec.data = a.mat.Inverse() * f.vec
+#u.vec.data = a.mat.Inverse() * f.vec #freedofs=V.FreeDofs()
 #print("a lautet ", a.mat)
 #print("f lautet ", f.vec)
 #print("DG lautet ", u.vec.data)
-B = 1/mu * [-grad(u)[2], grad(u)[1], 0]
-Draw(u, mesh, 'V')
-Draw(B, mesh, 'B')
-
+B = CF((grad(u)[1], -grad(u)[0]))       #Gradient(Komponenten) sind L2-Funktionen. Grad ist nur 2-dim, 
+                                        #weil Geometrie nur 2-dim 
+Draw(u) #u vom Typ gridfunction - Information über mesh bereits implizit enthalten
+Draw(B, mesh, 'B') #B vom Typ tuple, keine Information über mesh
+Draw(Norm(1/mu*B[0]), mesh, 'Norm Hx')
+Draw(Norm(B[0]), mesh, 'Norm Bx')
+Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(CF([1,2,3]), mesh, "materials")
-
+print(u.vec.Norm())
 
 #input()
 
