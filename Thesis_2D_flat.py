@@ -107,10 +107,11 @@ with TaskManager():
 
 u.vec.data = a.mat.Inverse() * f.vec
 #print("a lautet ", a.mat)
-print("f lautet ", f.vec)
+#print("f lautet ", f.vec)
 #print("DG lautet ", u.vec.data)
+B = 1/mu * [-grad(u)[2], grad(u)[1], 0]
 Draw(u, mesh, 'V')
-Draw(mu*grad(u), mesh, 'H')
+Draw(B, mesh, 'B')
 
 Draw(CF([1,2,3]), mesh, "materials")
 
