@@ -93,7 +93,7 @@ a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
 c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
 
 f = LinearForm(V)
-f += K0*sin((2/D)*x)*test.Trace()*ds("outer")     # set neumann .. macht das Sinn? ...
+f += K0*cos(1/D*x)*test.Trace()*ds("outer")   #*sin(2/D*x)  # set neumann .. macht das Sinn? ...
                                                         #Wir wollen am oberen Neumann-Rand 
 # .Trace() reduziert Domain-funktionen auf die Grenzen. Bei "ds"-Integralen sinnvoll. 
 #"dx" für VOL-Integrale, "ds" für Surface-Integrale
@@ -116,7 +116,9 @@ B = CF((grad(u)[1], -grad(u)[0]))       #Gradient(Komponenten) sind L2-Funktione
                                         #weil Geometrie nur 2-dim 
 Draw(u) #u vom Typ gridfunction - Information über mesh bereits implizit enthalten
 Draw(B, mesh, 'B') #B vom Typ tuple, keine Information über mesh
+Draw(1/mu*B, mesh, 'H')
 Draw(Norm(1/mu*B[0]), mesh, 'Norm Hx')
+Draw(Norm(1/mu*B[1]), mesh, 'Norm Hy')
 Draw(Norm(B[0]), mesh, 'Norm Bx')
 Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(CF([1,2,3]), mesh, "materials")
