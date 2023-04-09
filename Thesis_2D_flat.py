@@ -78,7 +78,7 @@ coef_dirichlet = CF([0,0,0,0,0,0,0,0,0,0,0,0])
 #bnd_dir = {"air_left" : 0, "air_right" : 0, "inner" : 0}
 #bndCF = CF([bnd_dir[bnd] for bnd in mesh.GetBoundaries()])
 
-V = H1(mesh, order = 2, dirichlet = "air_left|air_right|inner", complex=True)
+V = H1(mesh, order = 2, dirichlet = "inner", complex=True)
 
 #print(V)
 
@@ -93,7 +93,7 @@ a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
 c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
 
 f = LinearForm(V)
-f += K0*cos(1/D*x)*test.Trace()*ds("outer")   #*sin(2/D*x)  # set neumann .. macht das Sinn? ...
+f += -K0*cos(2/D*x)*test.Trace()*ds("outer")   #*cos(2/D*x)  # set neumann .. macht das Sinn? ...
                                                         #Wir wollen am oberen Neumann-Rand 
 # .Trace() reduziert Domain-funktionen auf die Grenzen. Bei "ds"-Integralen sinnvoll. 
 #"dx" für VOL-Integrale, "ds" für Surface-Integrale
