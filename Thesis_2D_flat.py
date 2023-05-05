@@ -58,7 +58,9 @@ mesh = Mesh(mesh)
 omega = 50
 #sigma = {"air" : 0, "magnet" : 10e6, "rotor" : 10e3}
 #sigmaCF = CF([sigma[mat] for mat in mesh.GetMaterials()])
-sigmaCF = CF([0, 10e6, 10e3])
+
+sigmaCF = CF([0, 0, 0]) #[0, 10e3, 10e6]
+sigma_visual = CF([0, 10e3, 0])
 mu_air = 4e-7*np.pi
 mu_magnet = 10*mu_air
 mu_rotor = mu_air*1000
@@ -69,7 +71,7 @@ Kvalues["outer"] = K0
 K0CF = CF([Kvalues[mat] for mat in mesh.GetBoundaries()])
 
 
-#print(mesh.GetMaterials())
+print(mesh.GetMaterials())
 #print(mesh.GetBoundaries())
 
 #Randwert Probleme u. (Bi-)Linearform
@@ -121,8 +123,15 @@ Draw(Norm(1/mu*B[0]), mesh, 'Norm Hx')
 Draw(Norm(1/mu*B[1]), mesh, 'Norm Hy')
 Draw(Norm(B[0]), mesh, 'Norm Bx')
 Draw(Norm(B[1]), mesh, 'Norm By')
+Draw(-1j*omega*sigma_visual*u, mesh, 'Jz') #Wirbelströme J = -jomega*sigma*A
 Draw(CF([1,2,3]), mesh, "materials")
 print(u.vec.Norm())
+
+p = sigma_visual*omega*omega*u*Conj(u)/2
+energy = Integrate(p, mesh)
+#Integral über 1 dOmega muss Fläche liefern
+
+print("P(u, u) = ", energy)
 
 #input()
 
