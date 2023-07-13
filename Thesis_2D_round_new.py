@@ -6,7 +6,7 @@ from ngsolve import *
 import numpy as np
 import math as math
 
-#ng_globals.m
+ngsglobals.msg_level = 5
 
 
 
@@ -50,8 +50,12 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     #for i in range(PZ):
     #    geo = Glue([geo, magnets[i]])
     return geo
-PZ = 4
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=20e-3, H_W=30e-3, Tau=3/4, PZ=PZ), dim = 2).GenerateMesh(maxh=0.01))
+
+PZ = 4 
+print(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=20e-3, H_W=30e-3, Tau=1, PZ=PZ))  
+mp = MeshingParameters(maxh=0.01)
+mp.
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=20e-3, H_W=30e-3, Tau=1, PZ=PZ), dim = 2).GenerateMesh(maxh=0.01))
 mesh.Curve(3)
 #Materials
 #('air', 'rotor', 'magnets_0', 'magnets_1', 'magnets_2', 'magnets_3', 'magnets_4', 'magnets_5', 'magnets_6', 'magnets_7', 'magnets_8', 'magnets_9', 'magnets_10', 'magnets_11')
@@ -59,7 +63,7 @@ mesh.Curve(3)
 #{'default', 'inner', 'outer'}
 
 print(mesh.GetMaterials())
-#print(set(mesh.GetBoundaries()))
+print(set(mesh.GetBoundaries()))
 
 #              Coefficient Functions Sigma und Mu
 #

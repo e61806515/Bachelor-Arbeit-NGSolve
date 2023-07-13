@@ -3,7 +3,7 @@ from ngsolve import *
 
 #from netgen.webgui import Draw as DrawGeo
 #from ngsolve.webgui import Draw
-from netgen.meshing import MeshingParameters
+from netgen.meshing import MeshingParameters, IdentificationType
 import numpy as np
 import math as math
 import netgen.gui
@@ -23,19 +23,19 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     r_L = r_Fe + H_L
     rect = WorkPlane(Axes((-r_L,-r_L,0), n=Z, h=X)).Rectangle(2*r_L, r_L).Face()
 
-    inner = WorkPlane().Circle(H_W).Face() #- rect
+    inner = WorkPlane().Circle(H_W).Face() - rect
     inner.edges.name="inner"
 
-    rotor = WorkPlane().Circle(r_Fe).Face() #-rect
+    rotor = WorkPlane().Circle(r_Fe).Face() -rect
     rotor.name = "rotor"
     rotor.col = (1,0,0)
 
-    magnets = [WorkPlane(Axes((0,0,0), n=Z, h=X))]*PZ   
+    magnets = []  
     d_phi = 360/PZ
     phi_M = d_phi*Tau/2
     for i in range(PZ):
-        #if (i*d_phi < 90) or (i*d_phi > 270):
-            #magnets = magnets + [WorkPlane(Axes((0,0,0), n=Z, h=X))]
+        if (i*d_phi < 90) or (i*d_phi > 270):
+            magnets = magnets + [WorkPlane(Axes((0,0,0), n=Z, h=X))]
             magnets[i].MoveTo(r_Fe*sin(i*d_phi*pi/180), r_Fe*cos(i*d_phi*pi/180))
             magnets[i].Arc(r_Fe, -phi_M).Rotate(90)
             magnets[i].Line(H_M).Rotate(90)
@@ -50,24 +50,44 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
             magnets[i].col = (0, 0, 1)
 
     
-    outer = WorkPlane().Circle(r_L).Face() #- rect
+    outer = WorkPlane().Circle(r_L).Face() - rect
     outer.name = "air"
     outer.edges.name = "outer"
+    outer.edges
 
     outer.col = (0,1,0)
 
+    
+    
     
 
     geo = Glue(([outer-rotor - sum(magnets), rotor- inner] + magnets))
     #geo = Glue([geo - rect])
     #for i in range(PZ):
     #    geo = Glue([geo, magnets[i]])
+    #PERIODIC EDGES
+
+    a = geo.edges.Nearest((-(r_Fe+H_L/2),0,0))
+    a.name = "left_o"
+    b = geo.edges.Nearest((-(r_Fe/2),0,0)) 
+    b.name = "left_i"
+    c = geo.edges.Nearest(((r_Fe+H_L/2),0,0))
+    c.name = "right_o"
+    d = geo.edges.Nearest(((r_Fe/2),0,0))
+    d.name = "right_i"
+    
+    trafo = Rotation(Axis((0,0,0), Z), 0)
+    a.Identify(d, "air_edge",type = IdentificationType.PERIODIC, trafo=trafo)
+    b.Identify(c, "rotor_edge",type = IdentificationType.PERIODIC, trafo=trafo)
+
     return geo
 
 PZ = 2 
-#print(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=20e-3, H_W=30e-3, Tau=1, PZ=PZ))  
 mp = MeshingParameters(maxh=0.4)
 #mp.RestrictH(x=0, y=0, z=1, h=0.0025)
+phase = [-1,-1]
+
+
 mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=35.19e-3, H_W=3e-3, Tau=3/4, PZ=PZ), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
 #Materials
@@ -121,11 +141,11 @@ def K(x,y):
 #
 #
 
-V = H1(mesh, order = 2, dirichlet = "inner", complex=True)
+V = Periodic(H1(mesh, order = 2, dirichlet = "inner", complex=True), phase=phase)
 trial = V.TrialFunction()
 test = V.TestFunction()
 u = GridFunction(V) 
-
+exit()
 a = BilinearForm(V, symmetric = True)
 a +=  1/muCF*grad(trial)*grad(test) * dx
 a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
