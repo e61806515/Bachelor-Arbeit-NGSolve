@@ -18,6 +18,7 @@ import netgen.gui
 #
 def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     
+    print("Tau = ", Tau)
 
     r_Fe = H_Fe + H_W
     r_L = r_Fe + H_L
@@ -25,10 +26,6 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
 
     inner = WorkPlane().Circle(H_W).Face() #- rect
     inner.edges.name="inner"
-
-    rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.name = "rotor"
-    rotor.col = (1,0,0)
 
     magnets = [WorkPlane(Axes((0,0,0), n=Z, h=X))]*PZ   
     d_phi = 360/PZ
@@ -43,13 +40,16 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
             magnets[i].Line(H_M).Rotate(90)
             magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
             magnets[i] = magnets[i].Face()
-            magnets[i].maxh = 0.01
-            magnets[i].edges.maxh = 0.0001
+            magnets[i].maxh = 0.001
+            magnets[i].edges.maxh = 0.0005
             #magnets[i].vertices.maxh = 0.00001 #geht nicht??
             magnets[i].name = f"magnets_{i}" #{i:"Anweisungen zur Formatierung"} Formated String
             magnets[i].col = (0, 0, 1)
 
-    
+    rotor = WorkPlane().Circle(r_Fe).Face() #-rect
+    rotor.name = "rotor"
+    rotor.col = (1,0,0)
+
     outer = WorkPlane().Circle(r_L).Face() #- rect
     outer.name = "air"
     outer.edges.name = "outer"
@@ -68,7 +68,7 @@ PZ = 2
 #print(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=20e-3, H_W=30e-3, Tau=1, PZ=PZ))  
 mp = MeshingParameters(maxh=0.4)
 #mp.RestrictH(x=0, y=0, z=1, h=0.0025)
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=35.19e-3, H_W=3e-3, Tau=3/4, PZ=PZ), dim = 2).GenerateMesh(mp=mp))
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=26.19e-3, H_W=9e-3, Tau=3/4, PZ=PZ), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
 #Materials
 #('air', 'rotor', 'magnets_0', 'magnets_1', 'magnets_2', 'magnets_3', 'magnets_4', 'magnets_5', 'magnets_6', 'magnets_7', 'magnets_8', 'magnets_9', 'magnets_10', 'magnets_11')
@@ -80,27 +80,29 @@ print(set(mesh.GetBoundaries()))
 
 #              Coefficient Functions Sigma und Mu
 #
-#
+#                   magnet:NdFeB mu_r = 1.04 - 1.08 und sigma = 0.667e6
+#                   rotor: Fe mu_r = 1e4 oder 5e3 u. sigma = 1.76e6 - 1.97e6 .... Welche Werte Herr Schmid??????
 #
 #version_0 = CF([0, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
 #version_1 = CF(list(range(len(mesh.GetMaterials()))))
 mu_air = 4e-7*np.pi
 mu_magnet = 1.08*mu_air
-mu_rotor = mu_air*3*10e-3
+mu_rotor = mu_air*5e3
 mu = {"air":mu_air, "rotor": mu_rotor}
 [mu.update({f"magnets_{i}": mu_magnet}) for i in range(PZ)]
 #version_2 = CF([val[mat] if mat in val.keys() else 0 for mat in mesh.GetMaterials()])
-muCF = mesh.MaterialCF(mu)
+muCF = mesh.MaterialCF(mu, default=mu_air)
 
-sigma = {"air":0, "rotor": 1.04e7}
+sigma = {"air":0, "rotor": 1.86e6}
 [sigma.update({f"magnets_{i}": 0.667e6}) for i in range(PZ)]
-sigmaCF = mesh.MaterialCF(sigma)
-sigma_v = {"air":0, "rotor": 0}
+sigmaCF = mesh.MaterialCF(sigma, default=0)
+sigma_v = {"air":None, "rotor": None}
 [sigma_v.update({f"magnets_{i}": 0.667e6}) for i in range(PZ)]
 sigma_visual = mesh.MaterialCF(sigma_v)
 
 versions = [muCF, sigmaCF]
 [Draw(versions[i], mesh, str(i)) for i in range(len(versions))]
+
 
 Br = 1
 K0= 10000
@@ -166,3 +168,10 @@ p = sigma_visual*omega*omega*u*Conj(u)/2
 energy = Integrate(p, mesh)
 
 print("P(u, u) = ", energy)
+print("P/omega = ", energy/omega)
+
+
+delta_rot = sqrt(2/(omega*1.86e6*mu_rotor))
+delta_mag = sqrt(2/(omega*0.667e6*mu_magnet))
+print("delta_r = ", delta_rot)
+print("delta_m = ", delta_mag)
