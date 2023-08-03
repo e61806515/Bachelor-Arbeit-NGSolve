@@ -49,15 +49,16 @@ def MakeGeometry(d_M, d_Fe, d_L, b, tau_p):
         lines = [ (0, 1, 0, 1, "outer"), (7, 6, 3, 1, "inner_right"), (5, 4, 2, 1, "magnet"), 
                  (3, 6, 2, 3, "magnet"), (3, 2, 3, 1, "inner_left"), (8, 9, 3, 0, "inner")]
         if tau_p < 1:
-                lines.append((4, 3, 2, 1, "magnet_left"))
-                lines.append((6, 5, 2, 1, "magnet_right"))
 
                 for p1, p2, left, right, bc in lines:
-                        geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh=0.001)
-                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh = 0.001)
-                air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left", maxh = 0.001)
-                geo.Append(["line", pnums[9], pnums[7]], leftdomain=3, rightdomain=0, bc="rotor_right", maxh=0.001) #, copy=rotor_l)
-                geo.Append(["line", pnums[1], pnums[7]], leftdomain=0, rightdomain=1, bc="air_right", maxh = 0.001) #, copy=air_l)
+                        geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc)
+                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left")
+                air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left")
+                geo.Append(["line", pnums[7], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy= rotor_l)
+                geo.Append(["line", pnums[7], pnums[1]], leftdomain=1, rightdomain=0, bc="air_right", copy= air_l)
+                geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=1, bc="magnet_left", maxh = 0.0005)
+                geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=1, bc="magnet_right", maxh = 0.0005)
+
         else:
                 for p1, p2, left, right, bc in lines:
                         geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh=0.001)
@@ -65,23 +66,28 @@ def MakeGeometry(d_M, d_Fe, d_L, b, tau_p):
                 air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left")
                 magnet_l = geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=0, bc="magnet_left")
                 geo.Append(["line", pnums[9], pnums[7]], leftdomain=3, rightdomain=0, bc="rotor_right", copy=rotor_l)
-                geo.Append(["line", pnums[1], pnums[7]], leftdomain=0, rightdomain=1, bc="air_right", copy=air_l)
-                geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=0, bc="magnet_right", copy = magnet_l)
+                geo.Append(["line", pnums[1], pnums[7]], leftdomain=0, rightdomain=1, bc="air_right", copy=air_l, maxh = 0.0005)
+                geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=0, bc="magnet_right", copy = magnet_l, maxh = 0.0005)
 
         
         geo.SetMaterial( 1, "air")
         geo.SetMaterial( 2, "magnet")
         geo.SetMaterial( 3, "rotor")
 
+        geo.SetDomainMaxH(2, 0.001)
+
         return geo
 
-b = np.pi/2 * 76.38e-3
-mesh = MakeGeometry(6e-3, 26.19e-3, 2e-3, b, 3/4)
-Draw(mesh)
-
-print(mesh.GetNSplines())
-
-mesh = mesh.GenerateMesh(maxh = 0.01)
+#b = np.pi * 38.19e-3      #Breite b entspricht halben Umfang, also 
+                #Pi*r mit r = r_rot + h_magnet/2, halber Umfang ist pole pitch bei Schmid
+                #liefert 
+A = 539.898e-6
+b = A/((6e-3)*0.75) #liefert 0.1199773
+print("b lautet ", b)
+geo = MakeGeometry(6e-3, 26.19e-3, 2e-3, b, 3/4)
+Draw(geo)
+print(geo.GetNSplines())
+mesh = geo.GenerateMesh(maxh = 0.4)
 mesh = Mesh(mesh)
 
 
@@ -104,6 +110,7 @@ sigma_visual = mesh.MaterialCF(sigma_v)
 
 versions = [muCF, sigmaCF]
 [Draw(versions[i], mesh, str(i)) for i in range(len(versions))]
+Draw(sigma_visual, mesh, "sigma_v")
 """sigmaCF = CF([0, 10e3, 10e6]) #[0, 10e3, 10e6]
 sigma_visual = CF([0, 10e3, 0])
 mu_air = 4e-7*np.pi
@@ -127,7 +134,7 @@ def K(x):
 coef_dirichlet = CF([0,0,0,0,0,0,0,0,0,0,0,0])
 
 #V = Periodic(H1(mesh, order = 2, dirichlet = "inner", complex=True), phase=[0,0])
-V = H1(mesh, order = 2, dirichlet = "inner", complex=True)
+V = Periodic(H1(mesh, order = 2, dirichlet = "inner", complex=True), phase = [-1,-1])
 trial = V.TrialFunction()
 test = V.TestFunction()
 u = GridFunction(V)
@@ -170,7 +177,6 @@ Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(u*1j*omega*sigmaCF, mesh, 'J')
 #Draw(CF([1,2,3]), mesh, "materials")
 Draw(K(x), mesh, 'K')
-print(u.vec.Norm())
 
 p = sigma_visual*omega*omega*u*Conj(u)/2
 #energy = Integrate(p, mesh, region_wise= True)

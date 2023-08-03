@@ -7,6 +7,8 @@ from netgen.meshing import MeshingParameters, IdentificationType
 import numpy as np
 import math as math
 import netgen.gui
+import matplotlib.pyplot as plot
+import cmath
 
 #ngsglobals.msg_level = 5
 
@@ -107,8 +109,7 @@ mp = MeshingParameters(maxh=0.4)
 phase = [-1,-1]
 
 #radius Rotor ist bei Schmid 35.19mm, r_rot = H_Fe+H_W
-geo = MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=26.19e-3, H_W=9e-3, Tau=3/4, PZ=PZ)
-mesh = Mesh(OCCGeometry(geo, dim = 2).GenerateMesh(mp=mp))
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=26.19e-3, H_W=9e-3, Tau=3/4, PZ=PZ), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
 #Materials
 #('air', 'rotor', 'magnets_0', 'magnets_1', 'magnets_2', 'magnets_3', 'magnets_4', 'magnets_5', 'magnets_6', 'magnets_7', 'magnets_8', 'magnets_9', 'magnets_10', 'magnets_11')
@@ -147,8 +148,8 @@ sigma_v = {"air":None, "rotor": None}
 sigma_visual = mesh.MaterialCF(sigma_v)
 
 versions = [muCF, sigmaCF]
-[Draw(versions[i], mesh, str(i)) for i in range(len(versions))]
-Draw(sigma_visual, mesh, "sigma_v")
+#[Draw(versions[i], mesh, str(i)) for i in range(len(versions))]
+#Draw(sigma_visual, mesh, "sigma_v")
 
 Br = 1
 K0= 10000
@@ -161,8 +162,8 @@ def Phi(x,y):
 
 def K(x,y):
      K1 = -K0*cos(Phi(x,y))
-     K2 = -K0*cos(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3)
-     K3 = -K0*cos(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3)
+     K2 = -K0*cos(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3*omega)
+     K3 = -K0*cos(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3*omega)
      return K1 + K2 + K3   
   
 
@@ -187,7 +188,6 @@ f += K(x,y)*test.Trace()*ds("outer") #*cos(2/D*x) PROBLEM weil hier periodische 
 
 #u.Set(coef_dirichlet, BND)
 #solver
-print("RATIO IS", 14.756/16.95)
 with TaskManager():
         a.Assemble()
         f.Assemble()
@@ -199,29 +199,43 @@ with TaskManager():
 
 B = CF((grad(u)[1], -grad(u)[0]))       #Gradient(Komponenten) sind L2-Funktionen. Grad ist nur 2-dim, 
                                         #weil Geometrie nur 2-dim 
-Draw(u) #u vom Typ gridfunction - Information über mesh bereits implizit enthalten
-Draw(B, mesh, 'B') #B vom Typ tuple, keine Information über mesh
-Draw(1/muCF*B, mesh, 'H')
-Draw(Norm(1/muCF*B[0]), mesh, 'Norm Hx')
-Draw(Norm(1/muCF*B[1]), mesh, 'Norm Hy')
-Draw(Norm(B[0]), mesh, 'Norm Bx')
-Draw(Norm(B[1]), mesh, 'Norm By')
-Draw(B.real, mesh, 'B_real')
-Draw(B.imag, mesh, 'B_imag')
-Draw(u*1j*omega*sigmaCF, mesh, 'J')
-Draw(K(x,y), mesh, 'K')
+#Draw(u) #u vom Typ gridfunction - Information über mesh bereits implizit enthalten
+#Draw(B, mesh, 'B') #B vom Typ tuple, keine Information über mesh
+#Draw(1/muCF*B, mesh, 'H')
+#Draw(Norm(1/muCF*B[0]), mesh, 'Norm Hx')
+#Draw(Norm(1/muCF*B[1]), mesh, 'Norm Hy')
+#Draw(Norm(B[0]), mesh, 'Norm Bx')
+#Draw(Norm(B[1]), mesh, 'Norm By')
+#Draw(B.real, mesh, 'B_real')
+#Draw(B.imag, mesh, 'B_imag')
+#Draw(u*1j*omega*sigmaCF, mesh, 'J')
+#Draw(K(x,y), mesh, 'K')
 #   WIRBELSTROMVERLUSTE
 #
 #
+
+x_val = np.linspace(10e0, 10e6, 50)
+p_values=[]
+for o in x_val:
+    p = sigma_visual*o*o*u*Conj(u)/2
+    energy = Integrate(p, mesh)*2
+    
+    p_values.append(energy.real)
+
+np.savetxt('p_flat.csv', p_values, delimiter=',')
+plot.plot(x_val, p_values)
+plot.title('Verluste round')
+plot.xscale('log')
+plot.yscale('log')
+plot.grid(True, which='both')
+plot.show()
+
 p = sigma_visual*omega*omega*u*Conj(u)/2
 #energy = Integrate(p, mesh, region_wise= True)
 energy = Integrate(p, mesh)
-
 print("P(u, u) = ", energy*2)
 print("P/omega = ", energy*2/omega)
 
-print(mesh.GetMaterials())
-print("A = ", Integrate(1, mesh, region_wise=True))
 delta_rot = sqrt(2/(omega*1.86e6*mu_rotor))
 delta_mag = sqrt(2/(omega*0.667e6*mu_magnet))
 print("delta_r = ", delta_rot)

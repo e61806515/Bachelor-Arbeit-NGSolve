@@ -64,7 +64,7 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     #    geo = Glue([geo, magnets[i]])
     return geo
 
-PZ = 2 
+PZ = 12 
 #print(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=20e-3, H_W=30e-3, Tau=1, PZ=PZ))  
 mp = MeshingParameters(maxh=0.4)
 #mp.RestrictH(x=0, y=0, z=1, h=0.0025)
@@ -114,8 +114,8 @@ def Phi(x,y):
 
 def K(x,y):
      K1 = -K0*sin(Phi(x,y))
-     K2 = -K0*sin(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3*omega)
-     K3 = -K0*sin(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3*omega)
+     K2 = -K0*sin(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3)
+     K3 = -K0*sin(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3)
      return K1 + K2 + K3     
 
 #              Finite Elemente Raum
