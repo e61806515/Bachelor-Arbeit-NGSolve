@@ -6,7 +6,7 @@ from ngsolve import *
 from netgen.meshing import MeshingParameters, IdentificationType
 import numpy as np
 import math as math
-#import netgen.gui
+import netgen.gui
 import matplotlib.pyplot as plot
 
 #ngsglobals.msg_level = 5
@@ -114,6 +114,7 @@ phase = [-1,-1]
 #radius Rotor ist bei Schmid 35.19mm, r_rot = H_Fe+H_W
 geo = MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=26.19e-3, H_W=9e-3, Tau=3/4, PZ=PZ)
 mesh = Mesh(OCCGeometry(geo, dim = 2).GenerateMesh(mp=mp))
+exit()
 mesh.Curve(3)
 
 
@@ -155,10 +156,16 @@ V = Periodic(H1(mesh, order = 3, dirichlet = "inner", complex=True), phase=phase
 trial = V.TrialFunction()
 test = V.TestFunction()
 
+sweep = False
+
 x_val = np.logspace(0, 6, 100)
 p_values=[]
 for omega in x_val:
 
+    if(sweep==True):
+         continue
+    else:
+         omega = 50
     u = GridFunction(V) 
 
     a = BilinearForm(V, symmetric = True)
@@ -177,32 +184,35 @@ for omega in x_val:
     
     p = sigmaCF*omega*omega*u*Conj(u)/2
     energy = Integrate(p, mesh, definedon=mesh.Materials("magnets_0"))*2
-    
+    if(sweep!=True):
+        print("Verluste = ", energy)
+        break
+
     p_values.append(energy.real)
 
 
 
+if(sweep==True):
+    p_flat =np.loadtxt('p_flat.csv', delimiter=',')
+    plot.plot(x_val, p_values)
+    plot.title('Eddy Current 1st O. Losses Half-Round, Tau=3/4, PZ=2')
+    plot.xscale('log')
+    plot.yscale('log')
+    plot.xlabel('Frequency (Hz)')
+    plot.ylabel('Power Losses (W/m)')
+    plot.grid(True, which='both')
+    plot.savefig('Losses_Round_180_Deg.jpg', format='jpg')
+    plot.show()
 
-p_flat =np.loadtxt('p_flat.csv', delimiter=',')
-plot.plot(x_val, p_values)
-plot.title('Eddy Current 1st O. Losses Half-Round, Tau=3/4, PZ=2')
-plot.xscale('log')
-plot.yscale('log')
-plot.xlabel('Frequency (Hz)')
-plot.ylabel('Power Losses (W/m)')
-plot.grid(True, which='both')
-plot.savefig('Losses_Round_180_Deg.jpg', format='jpg')
-plot.show()
+    r_vs_f=[]
+    for i in np.arange(0,len(x_val)):
+        d = p_values[i].real/p_flat[i]
+        r_vs_f.append(d)
 
-r_vs_f=[]
-for i in np.arange(0,len(x_val)):
-    d = p_values[i].real/p_flat[i]
-    r_vs_f.append(d)
-
-plot.semilogx(x_val, r_vs_f)
-plot.title('Eddy Current 1st Order Losses Ratio Flat vs Half-Round, Tau=3/4, PZ=2')
-plot.xlabel('Frequency (Hz)')
-plot.ylabel('Ratio Power Losses (W/m)')
-plot.grid(True, which='both')
-plot.savefig('Ratio_1st_Order_180_Deg.jpg', format='jpg')
-plot.show()
+    plot.semilogx(x_val, r_vs_f)
+    plot.title('Eddy Current 1st Order Losses Ratio Flat vs Half-Round, Tau=3/4, PZ=2')
+    plot.xlabel('Frequency (Hz)')
+    plot.ylabel('Ratio Power Losses (W/m)')
+    plot.grid(True, which='both')
+    plot.savefig('Ratio_1st_Order_180_Deg.jpg', format='jpg')
+    plot.show()

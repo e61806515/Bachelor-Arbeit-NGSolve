@@ -155,10 +155,18 @@ def Phi(x,y):
     return atan2(y,x)
 
 def K(x,y):
-     K1 = -K0*cos(Phi(x,y))
-     K2 = -K0*cos(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3)
-     K3 = -K0*cos(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3)
-     return K1 + K2 + K3   
+    K=0 
+    if(True):
+        K1 = -K0*cos(Phi(x,y))
+        K2 = -K0*cos(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3)
+        K3 = -K0*cos(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3)
+        K = K + K1 + K2 + K3
+    if(True):
+        K4 = -K0*cos(Phi(x,y) + pi/2)
+        K5 = -K0*cos(Phi(x,y) + 2*pi/3 + pi/2)*exp(1j*2*pi/3)
+        K6 = -K0*cos(Phi(x,y) + 4*pi/3 + pi/2)*exp(1j*4*pi/3)
+        K = K + K4 + K5 + K6
+    return K
   
 
 #              Finite Elemente Raum

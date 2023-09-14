@@ -68,6 +68,10 @@ PZ = 12
 #print(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=20e-3, H_W=30e-3, Tau=1, PZ=PZ))  
 mp = MeshingParameters(maxh=0.4)
 #mp.RestrictH(x=0, y=0, z=1, h=0.0025)
+H_L=8e-3
+H_Fe = 26.19e-3
+H_W= 9e-3
+r_L = H_Fe + H_W + H_L
 mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=26.19e-3, H_W=9e-3, Tau=3/4, PZ=PZ), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
 #Materials
@@ -110,21 +114,51 @@ omega = 50
 
 # Phi berechnung
 def Phi(x,y):
-    return atan2(y,x)+pi/9
+    return atan2(y,x) 
+wirecount = 30
+I0=10000*pi*r_L/wirecount
+def I(i):
+     phi = i*2*pi/3
+     return [I0*exp(1j*phi), phi]
 
-def K(x,y):
-    K=0 
-    if(True):
-        K1 = -K0*sin(Phi(x,y))
-        K2 = -K0*sin(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3)
-        K3 = -K0*sin(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3)
-        K = K + K1 + K2 + K3
-    if(False):
-        K4 = -K0*sin(Phi(x,y) + pi/2)
-        K5 = -K0*sin(Phi(x,y) + 2*pi/3 + pi/2)*exp(1j*2*pi/3)
-        K6 = -K0*sin(Phi(x,y) + 4*pi/3 + pi/2)*exp(1j*4*pi/3)
-        K = K + K4 + K5 + K6 
-    return K 
+for i in range(wirecount):
+     print("I%i = ",i, I(i))
+def H_i(i,x,y):
+     H_x = 0
+     H_y = 0
+     for j in range (wirecount):
+        I_in = I(i)[0]
+        x_i = r_L*sin(I(i)[1]+j*2*pi/(6*wirecount))
+        y_i = r_L*cos(I(i)[1]+j*2*pi/(6*wirecount))
+        roh = sqrt((x_i-x)*(x_i-x) + (y_i-y)*(y_i-y))
+        e_roh_x = (x-x_i)/roh
+        e_roh_y = (y-y_i)/roh
+        magn = I_in/(2*pi*roh+1e-15)
+
+        H_x = H_x + magn * -e_roh_y
+        H_y = H_y + magn * e_roh_x
+     for j in range (wirecount):
+        x_i = -r_L*sin(I(i)[1]+j*2*pi/(6*wirecount))
+        y_i = -r_L*cos(I(i)[1]+j*2*pi/(6*wirecount))
+        roh = sqrt((x_i-x)*(x_i-x) + (y_i-y)*(y_i-y))
+        e_roh_x = (x-x_i)/roh
+        e_roh_y = (y-y_i)/roh
+        magn = I_in/(2*pi*roh+1e-15)
+
+        H_x = H_x + magn * e_roh_y
+        H_y = H_y + magn * -e_roh_x
+     return CF((H_x, H_y))
+
+def H(x,y):
+    H = CF((0,0))
+    for i in range(3):
+         
+         H = H + H_i(i,x,y)
+    return H
+
+
+H_BS = H(x,y)        
+
 #              Finite Elemente Raum
 #
 #
@@ -142,8 +176,7 @@ a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
 c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
 
 f = LinearForm(V)
-f += K(x,y)*test.Trace()*ds("outer") #*cos(2/D*x) PROBLEM weil hier periodische RBs
-
+f += H_BS*CF((grad(test)[1], -grad(test)[0]))*dx #*cos(2/D*x) PROBLEM weil hier periodische RBs
 #u.Set(coef_dirichlet, BND)
 #solver
 
@@ -160,6 +193,7 @@ with TaskManager():
 B = CF((grad(u)[1], -grad(u)[0]))       #Gradient(Komponenten) sind L2-Funktionen. Grad ist nur 2-dim, 
                                         #weil Geometrie nur 2-dim 
 Draw(u) #u vom Typ gridfunction - Information über mesh bereits implizit enthalten
+Draw(H_BS, mesh, 'H_BS')
 Draw(B, mesh, 'B') #B vom Typ tuple, keine Information über mesh
 Draw(1/muCF*B, mesh, 'H')
 Draw(Norm(1/muCF*B[0]), mesh, 'Norm Hx')
@@ -167,13 +201,12 @@ Draw(Norm(1/muCF*B[1]), mesh, 'Norm Hy')
 Draw(Norm(B[0]), mesh, 'Norm Bx')
 Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(u*1j*omega*sigmaCF, mesh, 'J')
-Draw(K(x,y), mesh, 'K')
 #   WIRBELSTROMVERLUSTE
 #
 #
 p = sigma_visual*omega*omega*u*Conj(u)/2
 energy = Integrate(p, mesh)
-#print("Int_K = ", Integrate(sin(Phi(x,y)), definedon=mesh.Boundaries[1], ))
+
 print("P(u, u) = ", energy)
 print("P/omega = ", energy/omega)
 

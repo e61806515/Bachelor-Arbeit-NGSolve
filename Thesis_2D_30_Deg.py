@@ -8,6 +8,47 @@ import numpy as np
 import math as math
 import netgen.gui
 
+
+############################################
+def drawBndAll(mesh, block=True, old=None, drawFunc=None, useBBnd=False):
+
+    if old == None:
+        old = True if mesh.dim == 2 else False
+    [drawBnd(mesh, x, block, old, drawFunc=drawFunc, useBBnd=useBBnd) for x in set(mesh.GetBoundaries() if not useBBnd else mesh.GetBBoundaries())]
+
+def drawBnd(mesh, name="bottom|right|top|left|ibot|itop|interface|ileft|iright|natural", block=False, old=False, drawFunc=None, useBBnd=False):
+    from ngsolve import CF, H1, GridFunction, BND, BBND, Integrate
+
+    if drawFunc == None:
+        from ngsolve import Draw
+        drawFunc = Draw
+
+
+    val = {bnd:1 for bnd in name.split("|")}
+
+
+    if old:
+        if useBBnd:
+            fes = H1(mesh, dirichlet_bbnd=name)
+            sol = GridFunction(fes, "bbnd")
+            sol.Set(CF([val[bbnd] if bbnd in val.keys() else 0 for bbnd in mesh.GetBBoundaries()]), VOL_or_BND=BBND)
+        else:
+            fes = H1(mesh, dirichlet=name)
+            sol = GridFunction(fes, "bnd")
+            sol.Set(CF([val[bnd] if bnd in val.keys() else 0 for bnd in mesh.GetBoundaries()]), VOL_or_BND=BND)
+        drawFunc(sol)
+        print("-----", name, sum(sol.vec))
+
+    else:
+        bnd_CF = CF([val[bnd] if bnd in val.keys() else 0 for bnd in (mesh.GetBoundaries() if not useBBnd else mesh.GetBBoundaries())])
+        drawFunc(bnd_CF, mesh, "bnd", draw_vol=False)
+        print("-----", name, Integrate(bnd_CF, mesh, VOL_or_BND=(BND if not useBBnd else BBND)))
+
+    if block:
+        #cmdInput(locals(), globals())
+        input()
+
+#########################################
 #ngsglobals.msg_level = 5
 
 
@@ -16,7 +57,7 @@ import netgen.gui
 #
 #
 #
-PZ = 2 
+PZ = 12
 
 def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     
@@ -59,6 +100,7 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
             magnets[i] = magnets[i].Face() #- rect
             magnets[i].maxh = 0.001
             magnets[i].edges.maxh = 0.0005
+            magnets[i].edges.name = "magnet_edge"
             #magnets[i].vertices.maxh = 0.00001 #geht nicht??
             magnets[i].name = f"magnets_{i}" #{i:"Anweisungen zur Formatierung"} Formated String
             magnets[i].col = (0, 0, 1)
@@ -82,7 +124,7 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     #for i in range(PZ):
     #    geo = Glue([geo, magnets[i]])
     #PERIODIC EDGES
-    trafo = Rotation(Axis((0,0,0), Z), 180)
+    trafo = Rotation(Axis((0,0,0), Z), -d_phi)
 
     if Tau<1 :
         a = geo.edges.Nearest((-(r_Fe+H_L/2)*sin(d_phi/2*pi/180),(r_Fe+H_L/2)*cos(d_phi/2*pi/180),0))
@@ -115,13 +157,13 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     return geo
 
 
-mp = MeshingParameters(maxh=0.4)
+mp = MeshingParameters(maxh=0.004)
 #mp.RestrictH(x=0, y=0, z=1, h=0.0025)
-phase = [-1,-1]
+
 
 #radius Rotor ist bei Schmid 35.19mm, r_rot = H_Fe+H_W
 geo = MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=26.19e-3, H_W=9e-3, Tau=3/4, PZ=PZ)
-mesh = Mesh(OCCGeometry(geo, dim = 2).GenerateMesh(mp=mp))
+mesh = Mesh(OCCGeometry(geo, dim = 2).GenerateMesh(mp=mp, maxh=0.001))
 mesh.Curve(3)
 
 #Materials
@@ -184,7 +226,7 @@ def K(x,y):
 #
 #
 #
-
+phase = [-1,-1]
 V = Periodic(H1(mesh, order = 3, dirichlet = "inner", complex=True), phase=phase)
 trial = V.TrialFunction()
 test = V.TestFunction()
@@ -222,8 +264,8 @@ Draw(Norm(B[0]), mesh, 'Norm Bx')
 Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(B.real, mesh, 'B_real')
 Draw(B.imag, mesh, 'B_imag')
-Draw(u*1j*omega*sigmaCF, mesh, 'J')
-Draw(K(x,y), mesh, 'K')
+Draw(u*1j*omega*sigmaCF, mesh, 'J', autoscale=False, min= -3e5, max=3e5)
+Draw(K(x,y), mesh, 'K', title='K', unit=' A/m', autoscale=False, min= -3e3, max=3e3)
 #   WIRBELSTROMVERLUSTE
 #
 #

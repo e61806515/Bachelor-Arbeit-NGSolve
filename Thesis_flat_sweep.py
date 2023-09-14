@@ -12,7 +12,7 @@ import math as math
 import netgen.gui
 import matplotlib.pyplot as plot
 
-ngsglobals.msg_level = 5
+#ngsglobals.msg_level = 5
 #
 #
 #                       (outer)
@@ -53,21 +53,21 @@ def MakeGeometry(d_M, d_Fe, d_L, b, tau_p):
         if tau_p < 1:
 
                 for p1, p2, left, right, bc in lines:
-                        geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc)
-                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left")
-                air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left")
-                geo.Append(["line", pnums[7], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy= rotor_l)
-                geo.Append(["line", pnums[7], pnums[1]], leftdomain=1, rightdomain=0, bc="air_right", copy= air_l)
+                        geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh = 0.0005)
+                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh = 0.0005)
+                air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left", maxh = 0.0005)
+                geo.Append(["line", pnums[7], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy= rotor_l, maxh = 0.0005)
+                geo.Append(["line", pnums[7], pnums[1]], leftdomain=1, rightdomain=0, bc="air_right", copy= air_l, maxh = 0.0005)
                 geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=1, bc="magnet_left", maxh = 0.0005)
                 geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=1, bc="magnet_right", maxh = 0.0005)
 
         else:
                 for p1, p2, left, right, bc in lines:
-                        geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh=0.001)
-                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left")
-                air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left")
-                magnet_l = geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=0, bc="magnet_left")
-                geo.Append(["line", pnums[9], pnums[7]], leftdomain=3, rightdomain=0, bc="rotor_right", copy=rotor_l)
+                        geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh = 0.0005)
+                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh = 0.0005)
+                air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left", maxh = 0.0005)
+                magnet_l = geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=0, bc="magnet_left", maxh = 0.0005)
+                geo.Append(["line", pnums[9], pnums[7]], leftdomain=3, rightdomain=0, bc="rotor_right", copy=rotor_l, maxh = 0.0005)
                 geo.Append(["line", pnums[1], pnums[7]], leftdomain=0, rightdomain=1, bc="air_right", copy=air_l, maxh = 0.0005)
                 geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=0, bc="magnet_right", copy = magnet_l, maxh = 0.0005)
 
@@ -77,25 +77,31 @@ def MakeGeometry(d_M, d_Fe, d_L, b, tau_p):
         geo.SetMaterial( 3, "rotor")
 
         geo.SetDomainMaxH(2, 0.001)
-
+        
         return geo
 
 #b = np.pi * 38.19e-3      #Breite b entspricht halben Umfang, also 
                 #Pi*r mit r = r_rot + h_magnet/2, halber Umfang ist pole pitch bei Schmid
                 #liefert 
-A = 539.898e-6
-b = A/((6e-3)*0.75) #liefert 0.1199773
-print("b lautet ", b)
-geo = MakeGeometry(6e-3, 26.19e-3, 2e-3, b, 3/4)
+
+sweep = True
+
+PZ = 4
+A = 0.00010798
+tau = 3/4
+r_M = 42.19e-3
+r = r_M - 1.5e-3
+#b = A/((6e-3)*tau)
+b = r*2*pi/PZ
+geo = MakeGeometry(d_M=6e-3, d_Fe=26.19e-3, d_L=2e-3, b=b, tau_p=tau)
 Draw(geo)
 print(geo.GetNSplines())
-mesh = geo.GenerateMesh(maxh = 0.4)
+mesh = geo.GenerateMesh(maxh = 0.001)
 mesh = Mesh(mesh)
 
 
 
 #Parameters and Coefficient Functions
-omega = 50
 K0 = 10000
 
 mu_air = 4e-7*np.pi
@@ -112,23 +118,34 @@ sigma_visual = mesh.MaterialCF(sigma_v)
 versions = [muCF, sigmaCF]
 
 def Phi(x):
-    return asin(2*x/b-1)
+    return x*2*pi/(PZ*b)
 
 def K(x):
-     K1 = -K0*sin(Phi(x))
-     K2 = -K0*sin(Phi(x) + 2*pi/3)*exp(1j*2*pi/3)
-     K3 = -K0*sin(Phi(x) + 4*pi/3)*exp(1j*4*pi/3)
-     return K1 + K2 + K3     
+    K=0 
+    
+    if(True):
+        K1 = -K0*cos(Phi(x))
+        K2 = -K0*cos(Phi(x) + 2*pi/3)*exp(1j*2*pi/3)
+        K3 = -K0*cos(Phi(x) + 4*pi/3)*exp(1j*4*pi/3)
+        K = K + K1 + K2 + K3
+    if(True):
+        K4 = -K0*cos(Phi(x) + pi/2)
+        K5 = -K0*cos(Phi(x) + 2*pi/3 + pi/2)*exp(1j*2*pi/3)
+        K6 = -K0*cos(Phi(x) + 4*pi/3 + pi/2)*exp(1j*4*pi/3)
+        K = K + K4 + K5 + K6 
+    return K/2
 
 #Randwert Probleme u. (Bi-)Linearform
 coef_dirichlet = CF([0,0,0,0,0,0,0,0,0,0,0,0])
 V = Periodic(H1(mesh, order = 2, dirichlet = "inner", complex=True), phase = [-1,-1])
 trial = V.TrialFunction()
 test = V.TestFunction()
+
 x_val = np.logspace(0, 6, 100)
 p_values=[]
 for omega in x_val: 
-        
+        if(sweep!=True):
+         omega = 50
         u = GridFunction(V)
 
         a = BilinearForm(V, symmetric = True)
@@ -147,25 +164,25 @@ for omega in x_val:
                 bvp.Do()
 
         p = sigma_visual*omega*omega*u*Conj(u)/2
-        energy = Integrate(p, mesh)*2
-    
+        energy = Integrate(p, mesh)*PZ
+        if(sweep!=True):
+                print("Verluste = ", energy)
+                Draw(u*1j*omega*sigmaCF, mesh, 'J')
+                break
         p_values.append(energy.real)
 
+if(sweep==True):        
+        np.savetxt('p_flat.csv', p_values, delimiter=',')
+        plot.plot(x_val, p_values)
+        plot.title('Eddy Current 1st O. Losses Flat 180°, Tau=3/4, PZ=2')
+        plot.xscale('log')
+        plot.yscale('log')
+        plot.xlabel('Frequency (Hz)')
+        plot.ylabel('Power Losses (W/m)')
+        plot.grid(True, which='both')
+        plot.savefig('Losses_Flat_180_Deg_3Phase.pdf', format='pdf')
+        plot.show()
 
-np.savetxt('p_flat.csv', p_values, delimiter=',')
-plot.plot(x_val, p_values)
-plot.title('Eddy Current 1st O. Losses Flat 180°, Tau=3/4, PZ=2')
-plot.xscale('log')
-plot.yscale('log')
-plot.xlabel('Frequency (Hz)')
-plot.ylabel('Power Losses (W/m)')
-plot.grid(True, which='both')
-plot.savefig('Losses_Flat_180_Deg.jpg', format='jpg')
-plot.show()
-
-
-print("P(u, u) = ", energy*2)
-print("P/omega = ", energy*2/omega)
 
 
 

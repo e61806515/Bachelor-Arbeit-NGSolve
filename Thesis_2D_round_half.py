@@ -16,27 +16,39 @@ import netgen.gui
 #
 #
 #
+PZ = 2
+
 def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     
     print("Tau = ", Tau)
 
     r_Fe = H_Fe + H_W
     r_L = r_Fe + H_L
-    rect = WorkPlane(Axes((-r_L,-r_L,0), n=Z, h=X)).Rectangle(2*r_L, r_L).Face()
+    d_phi = 360/PZ
+    phi_M = d_phi*Tau/2
+    #rect = WorkPlane(Axes((-r_L,-r_L,0), n=Z, h=X)).Rectangle(2*r_L, r_L).Face()
+    subtract = WorkPlane(Axes((0,0,0), n=Z, h=Y)).Rotate(d_phi/2)
+    #subtract.MoveTo((r_Fe+H_M)*sin(d_phi/2*pi/180), (r_Fe+H_M)*cos(d_phi/2*pi/180))
+    subtract.Line(r_L).Rotate(90)
+    subtract.Arc(r_L, (360-d_phi)).Rotate(90)
+    subtract.Line(r_L)
+    #subtract.Line(r_L).Rotate(180+d_phi)
+    #subtract.Line(r_L)
+    subtract = subtract.Face()
 
-    inner = WorkPlane().Circle(H_W).Face() - rect
+    inner = WorkPlane().Circle(H_W).Face() - subtract
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
     rotor.name = "rotor"
-    rotor = rotor - rect
+    rotor = rotor - subtract
     rotor.col = (1,0,0)
 
     magnets =  []#[WorkPlane(Axes((0,0,0), n=Z, h=X))] * PZ
-    d_phi = 360/PZ
-    phi_M = d_phi*Tau/2
+    right = 360/(PZ*2)
+    left = 360*(1-1/(PZ*2))
     for i in range(PZ):
-        if (i*d_phi < 90) or (i*d_phi > 270):
+        if (i*d_phi < right) or (i*d_phi > left):
             magnets = magnets + [WorkPlane(Axes((0,0,0), n=Z, h=X))]
             magnets[i].MoveTo(r_Fe*sin(i*d_phi*pi/180), r_Fe*cos(i*d_phi*pi/180))
             magnets[i].Arc(r_Fe, -phi_M).Rotate(90)
@@ -46,7 +58,7 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
             magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
             magnets[i] = magnets[i].Face() #- rect
             magnets[i].maxh = 0.001
-            magnets[i].edges.maxh = 0.0005
+            magnets[i].edges.name = "magnet_edge"
             #magnets[i].vertices.maxh = 0.00001 #geht nicht??
             magnets[i].name = f"magnets_{i}" #{i:"Anweisungen zur Formatierung"} Formated String
             magnets[i].col = (0, 0, 1)
@@ -54,7 +66,7 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
        
     outer = WorkPlane().Circle(r_L).Face() 
     outer.name = "air"
-    outer = outer - rect
+    outer = outer - subtract
     outer.edges.name = "outer"
     outer.edges
 
@@ -65,50 +77,52 @@ def MakeGeometry(H_L, H_M, H_Fe, H_W, Tau, PZ):
     
 
     geo = Glue(([outer-rotor - sum(magnets), rotor- inner] + magnets))
+    
     #geo = Glue([geo - rect])
     #for i in range(PZ):
     #    geo = Glue([geo, magnets[i]])
     #PERIODIC EDGES
-    trafo = Rotation(Axis((0,0,0), Z), 180)
+    trafo = Rotation(Axis((0,0,0), Z), -d_phi)
 
     if Tau<1 :
-        a = geo.edges.Nearest((-(r_Fe+H_L/2),0,0))
+        a = geo.edges.Nearest((-(r_Fe+H_L/2)*sin(d_phi/2*pi/180),(r_Fe+H_L/2)*cos(d_phi/2*pi/180),0))
         a.name = "left_o"
-        b = geo.edges.Nearest((-(r_Fe/2),0,0)) 
+        b = geo.edges.Nearest((-(r_Fe/2)*sin(d_phi/2*pi/180),(r_Fe/2)*cos(d_phi/2*pi/180),0)) 
         b.name = "left_i"
-        d = geo.edges.Nearest(((r_Fe+H_L/2),0,0))
+        d = geo.edges.Nearest(((r_Fe+H_L/2)*sin(d_phi/2*pi/180),(r_Fe+H_L/2)*cos(d_phi/2*pi/180),0))
         d.name = "right_o"
-        c = geo.edges.Nearest(((r_Fe/2),0,0))
+        c = geo.edges.Nearest(((r_Fe/2)*sin(d_phi/2*pi/180),(r_Fe/2)*cos(d_phi/2*pi/180),0))
         c.name = "right_i"
     else:
-        a = geo.edges.Nearest((-(r_Fe+H_L - (H_L-H_M)/2),0,0))
+        a = geo.edges.Nearest((-(r_Fe+H_L - (H_L-H_M)/2)*sin(d_phi/2*pi/180),(r_Fe+H_L - (H_L-H_M)/2)*cos(d_phi/2*pi/180),0))
         a.name = "left_o"
-        b = geo.edges.Nearest((-(r_Fe/2),0,0)) 
+        b = geo.edges.Nearest((-(r_Fe/2)*sin(d_phi/2*pi/180),(r_Fe/2)*cos(d_phi/2*pi/180),0)) 
         b.name = "left_i"
-        e = geo.edges.Nearest((-(r_Fe+H_M/2),0,0))
+        e = geo.edges.Nearest((-(r_Fe+H_M/2)*sin(d_phi/2*pi/180),(r_Fe+H_M/2)*cos(d_phi/2*pi/180),0))
         e.name = "left_m"
-        f = geo.edges.Nearest(((r_Fe+H_M/2),0,0))
+        f = geo.edges.Nearest(((r_Fe+H_M/2)*sin(d_phi/2*pi/180),(r_Fe+H_M/2)*cos(d_phi/2*pi/180),0))
         f.name = "right_m"
-        d = geo.edges.Nearest(((r_Fe+H_L/2 - (H_L-H_M)/2),0,0))
+        d = geo.edges.Nearest(((r_Fe+H_L - (H_L-H_M)/2)*sin(d_phi/2*pi/180),(r_Fe+H_L - (H_L-H_M)/2)*cos(d_phi/2*pi/180),0))
         d.name = "right_o"
-        c = geo.edges.Nearest(((r_Fe/2),0,0))
+        c = geo.edges.Nearest(((r_Fe/2*sin(d_phi/2*pi/180)),(r_Fe/2*cos(d_phi/2*pi/180)),0))
         c.name = "right_i"
 
         e.Identify(f, "magnet_edge", type = IdentificationType.PERIODIC, trafo=trafo)
     
     a.Identify(d, "air_edge",type = IdentificationType.PERIODIC, trafo=trafo)
-    b.Identify(c, "rotor_edge",type = IdentificationType.PERIODIC, trafo=trafo)
+    b.Identify(c, "rotor_edge",type = IdentificationType.PERIODIC, trafo=trafo) 
     
+    geo.edges.maxh=0.0005
     return geo
 
-PZ = 2 
-mp = MeshingParameters(maxh=0.4)
+
+mp = MeshingParameters(maxh=0.004)
 #mp.RestrictH(x=0, y=0, z=1, h=0.0025)
-phase = [-1,-1]
+
 
 #radius Rotor ist bei Schmid 35.19mm, r_rot = H_Fe+H_W
 geo = MakeGeometry(H_L=8e-3, H_M=6e-3, H_Fe=26.19e-3, H_W=9e-3, Tau=3/4, PZ=PZ)
-mesh = Mesh(OCCGeometry(geo, dim = 2).GenerateMesh(mp=mp))
+mesh = Mesh(OCCGeometry(geo, dim = 2).GenerateMesh(mp=mp, maxh=0.001))
 mesh.Curve(3)
 #Materials
 #('air', 'rotor', 'magnets_0', 'magnets_1', 'magnets_2', 'magnets_3', 'magnets_4', 'magnets_5', 'magnets_6', 'magnets_7', 'magnets_8', 'magnets_9', 'magnets_10', 'magnets_11')
@@ -163,14 +177,22 @@ def K(x,y):
      K1 = -K0*cos(Phi(x,y))
      K2 = -K0*cos(Phi(x,y) + 2*pi/3)*exp(1j*2*pi/3)
      K3 = -K0*cos(Phi(x,y) + 4*pi/3)*exp(1j*4*pi/3)
-     return K1 + K2 + K3   
+     K = K1 + K2 + K3
+     if(True):
+         K4 = -K0*cos(Phi(x,y) + pi/2)
+         K5 = -K0*cos(Phi(x,y) + 2*pi/3 + pi/2)*exp(1j*2*pi/3)
+         K6 = -K0*cos(Phi(x,y) + 4*pi/3 + pi/2)*exp(1j*4*pi/3)
+         K = K + K4 + K5 + K6
+    
+     
+     return K 
   
 
 #              Finite Elemente Raum
 #
 #
 #
-
+phase = [-1,-1]
 V = Periodic(H1(mesh, order = 3, dirichlet = "inner", complex=True), phase=phase)
 trial = V.TrialFunction()
 test = V.TestFunction()

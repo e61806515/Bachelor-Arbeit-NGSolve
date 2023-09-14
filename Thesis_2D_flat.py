@@ -74,17 +74,20 @@ def MakeGeometry(d_M, d_Fe, d_L, b, tau_p):
         geo.SetMaterial( 2, "magnet")
         geo.SetMaterial( 3, "rotor")
 
+        geo.SetDomainMaxH(1, 0.001)
         geo.SetDomainMaxH(2, 0.001)
-
+        geo.SetDomainMaxH(3, 0.001)
         return geo
 
 #b = np.pi * 38.19e-3      #Breite b entspricht halben Umfang, also 
                 #Pi*r mit r = r_rot + h_magnet/2, halber Umfang ist pole pitch bei Schmid
                 #liefert 
-A = 539.898e-6
-b = A/((6e-3)*0.75) #liefert 0.1199773
+PZ = 10
+A = 0.00010798
+tau = 3/4
+b = A/((6e-3)*tau) #liefert 0.1199773 für PZ 2 und 0.02399555 für PZ 10
 print("b lautet ", b)
-geo = MakeGeometry(6e-3, 26.19e-3, 2e-3, b, 3/4)
+geo = MakeGeometry(d_M=6e-3, d_Fe=26.19e-3, d_L=2e-3, b=b, tau_p=tau)
 Draw(geo)
 print(geo.GetNSplines())
 mesh = geo.GenerateMesh(maxh = 0.4)
@@ -122,12 +125,12 @@ Kvalues = {mat: 0 for mat in mesh.GetBoundaries()}
 Kvalues["outer"] = K0
 K0CF = CF([Kvalues[mat] for mat in mesh.GetBoundaries()])"""
 def Phi(x):
-    return asin(2*x/b-1)
+    return 2*pi/(PZ*b)
 
 def K(x):
      K1 = -K0*sin(Phi(x))
-     K2 = -K0*sin(Phi(x) + 2*pi/3)*exp(1j*2*pi/3*omega)
-     K3 = -K0*sin(Phi(x) + 4*pi/3)*exp(1j*4*pi/3*omega)
+     K2 = -K0*sin(Phi(x) + 2*pi/3)*exp(1j*2*pi/3)
+     K3 = -K0*sin(Phi(x) + 4*pi/3)*exp(1j*4*pi/3)
      return K1 + K2 + K3     
 
 #Randwert Probleme u. (Bi-)Linearform
