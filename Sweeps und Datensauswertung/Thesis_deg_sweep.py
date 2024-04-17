@@ -180,7 +180,7 @@ mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 
-sigma_magnet = 1.86e6
+sigma_magnet = 8e5
 sigma_rotor =  1e-12
 
 order0 = 2
@@ -249,7 +249,7 @@ def Phi(x,y):
     return atan2(y,x)
 
 def K(x,y, nu=1):
-     return K0*exp(-1j*nu*Phi(x,y))
+     return K0*exp(-1j*nu*Phi(x,y)*PZ/2)
 
 #              Finite Elemente Raum
 #

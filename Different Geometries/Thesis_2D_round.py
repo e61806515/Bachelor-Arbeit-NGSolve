@@ -87,7 +87,7 @@ sigma_magnet = 8e5
 sigma_rotor =  1.86e6
 
 order0 = 2
-tau = 0.9
+tau = 1
 
 Br = 1
 K0= 10000

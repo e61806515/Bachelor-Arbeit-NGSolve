@@ -175,7 +175,7 @@ def Phi(x,y):
     return atan2(y,x)
 
 def K(x,y, nu=1):
-     return K0*exp(-1j*nu*Phi(x,y))
+     return K0*exp(-1j*nu*Phi(x,y)*PZ/2)
 
 
 x_val = np.logspace(0, 6, 80)
