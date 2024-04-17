@@ -87,7 +87,7 @@ sigma_magnet = 8e5
 sigma_rotor =  1.86e6
 
 order0 = 2
-tau = 0.9999
+tau = 0.9
 
 Br = 1
 K0= 10000
@@ -129,7 +129,7 @@ def Phi(x,y):
     return atan2(y,x)
 
 def K(x,y, nu=1):
-     return K0*exp(-1j*nu*Phi(x,y))
+     return K0*exp(-1j*nu*PZ*Phi(x,y)/2)
 
 # -----------------------------------------------------------------------------
 # ---------------------Finite Elemente Raum
@@ -167,6 +167,7 @@ Draw(Norm(1/muCF*B[1]), mesh, 'Norm Hy')
 Draw(Norm(B[0]), mesh, 'Norm Bx')
 Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(u*1j*omega*sigmaCF, mesh, 'J')
+Draw(u*1j*omega*sigmaCF*mesh.MaterialCF({'magnets.*':1}, default=None), mesh, 'Jmag')
 Draw(K(x,y), mesh, 'K')
 
 

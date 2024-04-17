@@ -88,7 +88,7 @@ def MakeGeometry(d_M, delta, d_L, tau_p, tau):
                 #liefert
 PZ = 2
 #A = 0.00010798
-tau = 1
+tau = 0.5
 #tau = A/((6e-3)*tau) #liefert 0.1199773 für PZ 2 und 0.02399555 für PZ 10
 #print("b lautet ", b)
 d_L = 2e-3

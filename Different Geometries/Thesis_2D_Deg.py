@@ -82,6 +82,10 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, tau, PZ, maxh):
     rotor = rotor - subtract
     rotor.col = (1,0,0)
 
+    print("ri = ", r_i)
+    print("rFe = ", r_Fe)
+    print("rL = ", r_L)
+    print("r_mag", r_Fe+H_M)
     magnets =  []
     right = 360/(PZ*2)
     left = 360*(1-1/(PZ*2))
@@ -154,17 +158,17 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, tau, PZ, maxh):
 # ---------------------Parameters
 # -----------------------------------------------------------------------------
 
-PZ = 4
+PZ = 2
 
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 
 sigma_magnet = 8e5
-sigma_rotor =  1.86e6
+sigma_rotor =  0#1.86e6
 
 order0 = 2
-tau = 1
+tau = 0.9
 
 d_phi = 360/PZ*pi/180
 
@@ -211,7 +215,7 @@ def Phi(x,y):
     return atan2(y,x)
 
 def K(x,y, nu=1):
-     return K0*exp(-1j*nu*Phi(x,y))
+     return K0*exp(-1j*nu*PZ*Phi(x,y)/2)
 
 # -----------------------------------------------------------------------------
 # ---------------------Finite Elemente Raum
@@ -221,9 +225,9 @@ if(tau<1):
     phase = [-1,-1]
 else:
     print(f"phase is {d_phi}\n")
-    phase = [1j,1j, 1j]
+    #phase = [1j,1j, 1j]
     #phase = [exp(1j*d_phi),exp(1j*d_phi),exp(1j*d_phi)]
-    #phase = [-1, -1, -1]
+    phase = [-1, -1, -1]
 V = Periodic(H1(mesh, order = 3, dirichlet = "inner", complex=True), phase=phase)
 trial = V.TrialFunction()
 test = V.TestFunction()
@@ -257,6 +261,7 @@ Draw(Norm(1/muCF*B[1]), mesh, 'Norm Hy')
 Draw(Norm(B[0]), mesh, 'Norm Bx')
 Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(u*1j*omega*sigmaCF, mesh, 'J')
+Draw(u*1j*omega*sigmaCF*mesh.MaterialCF({'magnets.*':1}, default=None), mesh, 'Jmag')
 Draw(K(x,y), mesh, 'K')
 print("Delta is ", delta_rot)
 
@@ -271,7 +276,8 @@ J = sigmaCF * E
 
 # W/m^3
 # W/m
-
+A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
+print("Fläche = ", A)
 p = E*Conj(J)/2
 losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
 print("P(u, u) = ", PZ*losses)
