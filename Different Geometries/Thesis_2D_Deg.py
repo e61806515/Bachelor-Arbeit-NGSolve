@@ -99,7 +99,7 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, tau, PZ, maxh):
             magnets[i].Line(H_M).Rotate(90)
             magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
             magnets[i] = magnets[i].Face() #- rect
-            magnets[i].maxh = 0.2e-3
+            magnets[i].maxh = 0.02
             magnets[i].edges.name = "magnet_edge"
             magnets[i].name = f"magnets_{i}"
             magnets[i].col = (0, 0, 1)
@@ -158,7 +158,7 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, tau, PZ, maxh):
 # ---------------------Parameters
 # -----------------------------------------------------------------------------
 
-PZ = 2
+PZ = 12
 
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
@@ -167,7 +167,7 @@ mu_rotor = mu_air*5e2
 sigma_magnet = 8e5
 sigma_rotor =  0#1.86e6
 
-order0 = 2
+order0 = 1
 tau = 0.9
 
 d_phi = 360/PZ*pi/180
@@ -187,10 +187,7 @@ delta_mag = delta(omega, sigma_magnet, mu_magnet)
 
 print(delta_rot)
 
-r_Fe = 28e-3
-
-
-
+r_Fe = 35.1972e-3
 mp = MeshingParameters(maxh=0.4)
 mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta = delta_rot, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh = 0.5), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
@@ -212,7 +209,7 @@ sigmaCF = mesh.MaterialCF(sigma, default=0)
 
 # Phi berechnung
 def Phi(x,y):
-    return atan2(y,x)
+    return atan2(y,x)+np.pi/2
 
 def K(x,y, nu=1):
      return K0*exp(-1j*nu*PZ*Phi(x,y)/2)
@@ -276,9 +273,17 @@ J = sigmaCF * E
 
 # W/m^3
 # W/m
-A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
-print("Fläche = ", A)
-p = E*Conj(J)/2
-losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
-print("P(u, u) = ", PZ*losses)
-print("P/omega = ", PZ*losses/omega)
+
+try:
+    A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
+    print("Fläche = ", PZ*A)
+    p = E*Conj(J)/2
+    losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
+    print("P(u, u) = ", PZ*losses)
+    print("P/omega = ", PZ*losses/omega)
+
+    with open("simulations.txt", "a") as file:
+        file.write(f"Periodic Sim: PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A}: losses = {PZ*losses.real}, delta_magnet = {delta_mag}\n")
+        print("written to file")
+except Exception as e:
+    print("An error occurred: ", e)

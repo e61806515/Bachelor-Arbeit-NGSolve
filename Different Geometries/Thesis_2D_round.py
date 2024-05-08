@@ -22,7 +22,10 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, Tau, PZ, maxh):
     d_Fe = 5*delta
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
-
+    print("r_Fe = ", r_Fe)
+    print("r_L = ", r_L)
+    print("r_M = ", r_Fe + H_M)
+    print("r_i = ", r_i)
     rect = WorkPlane(Axes((-r_L,-r_L,0), n=Z, h=X)).Rectangle(2*r_L, r_L).Face()
 
     inner = WorkPlane().Circle(r_i).Face()
@@ -45,7 +48,7 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, Tau, PZ, maxh):
             magnets[i].Line(H_M).Rotate(90)
             magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
             magnets[i] = magnets[i].Face()
-            magnets[i].maxh = 0.2e-3
+            magnets[i].maxh = 0.02
 
             magnets[i].name = f"magnets_{i}"
             magnets[i].col = (0, 0, 1)
@@ -54,7 +57,7 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, Tau, PZ, maxh):
     else:
         magnets = WorkPlane().Circle(r_Fe+H_M).Face()
         magnets.name = "magnets"
-        magnets.maxh = 0.5*delta
+        magnets.maxh = 1*delta
         magnets.col = (0,0,1)
 
         magnets = [magnets- rotor]
@@ -77,17 +80,17 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, Tau, PZ, maxh):
 # ---------------------Parameters
 # -----------------------------------------------------------------------------
 
-PZ = 2
+PZ = 8
 
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 
 sigma_magnet = 8e5
-sigma_rotor =  1.86e6
+sigma_rotor =  1e-12
 
 order0 = 2
-tau = 1
+tau = 0.9
 
 Br = 1
 K0= 10000
@@ -104,7 +107,7 @@ delta_mag = delta(omega, sigma_magnet, mu_magnet)
 
 print(delta_rot)
 
-r_Fe = 28e-3
+r_Fe = 35.1972e-3
 mp = MeshingParameters(maxh=0.4)
 mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta = delta_rot, r_Fe = r_Fe, Tau=tau, PZ=PZ, maxh=0.5), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
@@ -185,17 +188,21 @@ J = sigmaCF * E
 
 
 p = E*Conj(J)/2
-losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
-#print("Int_K = ", Integrate(sin(Phi(x,y)), definedon=mesh.Boundaries[1], ))
-print("P(u, u) = ", losses)
-print("P/omega = ", losses/omega)
+try:
+    losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
+    print("P(u, u) = ", losses)
+    print("P/omega = ", losses/omega)
+    A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
+    print("Fläche = ", A)
+    delta = lambda omega, sigma, mu : sqrt(2/(omega*sigma*mu))
 
-delta = lambda omega, sigma, mu : sqrt(2/(omega*sigma*mu))
-# def delta(ome, s, m):
-#      return sqrt(...)
-delta_rot = delta(omega, sigma_rotor, mu_rotor)
-delta_mag = delta(omega, sigma_magnet, mu_magnet)
-# delta_rot = sqrt(2/(omega*1.86e6*mu_rotor))
-# delta_mag = sqrt(2/(omega*0.667e6*mu_magnet))
-print("delta_r = ", delta_rot)
-print("delta_m = ", delta_mag)
+    delta_rot = delta(omega, sigma_rotor, mu_rotor)
+    delta_mag = delta(omega, sigma_magnet, mu_magnet)
+
+    with open("simulations.txt", "a") as file:
+        file.write(f"Round Sim: PZ = {PZ}, Tau = {tau}, f = {omega}, A_magnet = {A}: losses = {losses.real}, delta_magnet = {delta_mag}\n")
+        print("written to file")
+    print("delta_r = ", delta_rot)
+    print("delta_m = ", delta_mag)
+except Exception as e:
+    print("An error occurred: ", e)

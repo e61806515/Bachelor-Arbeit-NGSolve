@@ -86,14 +86,13 @@ def MakeGeometry(d_M, delta, d_L, tau_p, tau):
 #b = np.pi * 38.19e-3      #Breite b entspricht halben Umfang, also
                 #Pi*r mit r = r_rot + h_magnet/2, halber Umfang ist pole pitch bei Schmid
                 #liefert
-PZ = 2
+PZ = 12
 #A = 0.00010798
-tau = 0.5
-#tau = A/((6e-3)*tau) #liefert 0.1199773 für PZ 2 und 0.02399555 für PZ 10
-#print("b lautet ", b)
+tau = 0.9
+print("Tau = ", tau)
 d_L = 2e-3
 d_M = 3*d_L
-tau_p = 60*d_L
+tau_p = 38.197e-3 *2*pi/PZ
 
 f = 1000
 omega = 2*np.pi*f
@@ -104,7 +103,7 @@ mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 mu = {"air":mu_air, "rotor": mu_rotor, "magnet": mu_magnet}
 
-sigma_rotor = 1.86e6
+sigma_rotor = 1e-12
 sigma_magnet = 8e5
 sigma = {"air":0, "rotor": sigma_rotor, "magnet": sigma_magnet}
 
@@ -200,15 +199,36 @@ Draw(K(x), mesh, 'K')
 
 p = sigma_visual*omega*omega*u*Conj(u)/2
 #losses = Integrate(p, mesh, region_wise= True)
-A = Integrate(1, mesh, region_wise=True)
-losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))
-print("Fläche = ", A)
-print("P(u, u) = ", PZ*losses)
-print("P/omega = ", PZ*  losses/omega)
+# A = Integrate(1, mesh, definedon=mesh.Materials("magnet"))
+# losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))
+# print("Fläche = ", A)
+# print("P(u, u) = ", PZ*losses)
+# print("P/omega = ", PZ*  losses/omega)
 
-print("delta_r = ", delta_rot)
-print("delta_m = ", delta_mag)
+# print("delta_r = ", delta_rot)
+# print("delta_m = ", delta_mag)
 
+# with open("simulations.txt", "a") as file:
+#     file.write(f"Flat Sim: PZ = {PZ}, Tau = {tau}, f = {f}, A_magnet = {A}: losses = {losses}, delta_magnet = {delta_mag} \n")
+#     print("written to file")
+try:
+    A = Integrate(1, mesh, definedon=mesh.Materials("magnet"))
+    losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))
+    print("Fläche = ", A*PZ)
+    print("P(u, u) = ", PZ*losses)
+    print("P/omega = ", PZ*  losses/omega)
+    print("losses/Area = ", losses/A)
+    print("delta_r = ", delta_rot)
+    print("delta_m = ", delta_mag)
+except Exception as e:
+    print("An error occurred: ", e)
+
+try:
+    with open("simulations.txt", "a") as file:
+        file.write(f"Flat Sim: PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A*PZ}: losses = {losses.real}, delta_magnet = {delta_mag} \n")
+        print("written to file")
+except Exception as e:
+    print("An error occurred while writing to file: ", e)
 #input()
 
 
