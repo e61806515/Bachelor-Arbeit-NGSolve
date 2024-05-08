@@ -96,7 +96,7 @@ d_L = 2e-3
 d_M = 3*d_L
 tau_p = 60*d_L
 
-nu =7
+nu =9
 
 f = 50
 omega = 2*np.pi*f
@@ -107,7 +107,7 @@ mu_rotor = mu_air*5e2
 mu = {"air":mu_air, "rotor": mu_rotor, "magnet": mu_magnet}
 
 sigma_rotor =1e-12
-sigma_magnet = 1.86e6
+sigma_magnet = 8e5
 sigma = {"air":0, "rotor": sigma_rotor, "magnet": sigma_magnet}
 
 sigma_v = {"air":None, "rotor": None, "magnet": sigma_magnet}

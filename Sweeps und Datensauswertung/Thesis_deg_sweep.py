@@ -174,7 +174,7 @@ sweep = True
 # --- Parameters
 # -----------------------------------------------------------------------------
 
-PZ = 4
+PZ = 2
 
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
@@ -184,9 +184,9 @@ sigma_magnet = 8e5
 sigma_rotor =  1e-12
 
 order0 = 2
-tau = 0.999
+tau = 1
 
-nu=1
+nu=9
 
 savetime = 0
 
@@ -200,7 +200,7 @@ delta = lambda omega, sigma, mu : sqrt(2/(omega*sigma*mu))
 #maxh ist der Koeffizient der max Elementgröße im Rotor. d.h. maxh_rotor = maxh*delta_rot
 maxh = 0.3
 mp = MeshingParameters(maxh=0.4)
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = 5e-3, delta_mag = 1e-3, r_Fe=28e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh(mp=mp))
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = 5e-3, delta_mag = 1e-3, r_Fe=35.1972e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
 
 
@@ -264,7 +264,7 @@ p_values=[]
 p_flat =np.loadtxt('p_flat.csv', delimiter=',')
 print(len(p_flat))
 with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 else nullcontext()) as time_file:
-    with open(f'sweep_deg_onlymag_{tau}_{nu}_PZ{PZ}-test.csv', 'w') as file:
+    with open(f'sweep_deg_onlymag_{tau}_{nu}_PZ{PZ}.csv', 'w') as file:
         for freq in x_val:
             omega = 2*np.pi*freq
             if(sigma_rotor>1e-12):
@@ -277,7 +277,7 @@ with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 
             print("f = ", freq)
 
             if delta_mag<1e-3:
-                mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = 5e-3, delta_mag = delta_mag, r_Fe=28e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh(mp=mp))
+                mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = 5e-3, delta_mag = delta_mag, r_Fe=35.1972e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh(mp=mp))
                 mesh.Curve(3)
 
             muCF = mesh.MaterialCF(mu, default=mu_air)
