@@ -58,19 +58,15 @@ def drawBnd(mesh, name="bottom|right|top|left|ibot|itop|interface|ileft|iright|n
 #
 #
 
-def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
-    print("maxh = ", maxh)
+def MakeGeometry(H_L, H_M, delta, r_Fe, tau, PZ, maxh):
+
     print("tau = ", tau)
-    print("maxh_mag = ", maxh * delta_mag)
-    d_Fe = 8*delta_rot
+    print("maxh = ", maxh * delta)
+    d_Fe = 5*delta
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
     d_phi = 360/PZ
     phi_M = d_phi*tau/2
-    print("r_Fe = ", r_Fe)
-    print("r_L = ", r_L)
-    print("r_M = ", r_Fe + H_M)
-    print("r_i = ", r_i)
     subtract = WorkPlane(Axes((0,0,0), n=Z, h=Y)).Rotate(d_phi/2)
     subtract.Line(r_L).Rotate(90)
     subtract.Arc(r_L, (360-d_phi)).Rotate(90)
@@ -81,7 +77,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.edges.maxh = 2*maxh*delta_rot
+    rotor.maxh = maxh*delta
     rotor.name = "rotor"
     rotor = rotor - subtract
     rotor.col = (1,0,0)
@@ -103,7 +99,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
             magnets[i].Line(H_M).Rotate(90)
             magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
             magnets[i] = magnets[i].Face() #- rect
-            magnets[i].edges.maxh = maxh*delta_mag
+            magnets[i].maxh = 0.02
             magnets[i].edges.name = "magnet_edge"
             magnets[i].name = f"magnets_{i}"
             magnets[i].col = (0, 0, 1)
@@ -118,6 +114,9 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     outer.col = (0,1,0)
 
 
+
+
+
     geo = Glue(([outer-rotor - sum(magnets), rotor- inner] + magnets))
 
 
@@ -127,7 +126,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     if tau<1 :
         a = geo.edges.Nearest((-(r_Fe+H_L/2)*sin(d_phi/2*pi/180),(r_Fe+H_L/2)*cos(d_phi/2*pi/180),0))
         a.name = "left_o"
-        b = geo.edges.Nearest((-(r_Fe-delta_rot)*sin(d_phi/2*pi/180),(r_Fe-delta_rot)*cos(d_phi/2*pi/180),0))
+        b = geo.edges.Nearest((-(r_Fe-delta)*sin(d_phi/2*pi/180),(r_Fe-delta)*cos(d_phi/2*pi/180),0))
         b.name = "left_i"
         d = geo.edges.Nearest(((r_Fe+H_L/2)*sin(d_phi/2*pi/180),(r_Fe+H_L/2)*cos(d_phi/2*pi/180),0))
         d.name = "right_o"
@@ -136,7 +135,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     else:
         a = geo.edges.Nearest((-(r_Fe+H_L - (H_L-H_M)/2)*sin(d_phi/2*pi/180),(r_Fe+H_L - (H_L-H_M)/2)*cos(d_phi/2*pi/180),0))
         a.name = "left_o"
-        b = geo.edges.Nearest((-(r_Fe-delta_rot)*sin(d_phi/2*pi/180),(r_Fe-delta_rot)*cos(d_phi/2*pi/180),0))
+        b = geo.edges.Nearest((-(r_Fe-delta)*sin(d_phi/2*pi/180),(r_Fe-delta)*cos(d_phi/2*pi/180),0))
         b.name = "left_i"
         e = geo.edges.Nearest((-(r_Fe+H_M/2)*sin(d_phi/2*pi/180),(r_Fe+H_M/2)*cos(d_phi/2*pi/180),0))
         e.name = "left_m"
@@ -159,34 +158,38 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
 # ---------------------Parameters
 # -----------------------------------------------------------------------------
 
+PZ = 1000
+
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
-sigma_magnet = 8e5
-sigma_rotor =  0 #1.86e6
 
-order0 = 3
-tau = 1
-nu=9
-PZ = 8
+sigma_magnet = 8e5
+sigma_rotor =  0#1.86e6
+
+order0 = 1
+tau = 0.9
+
 d_phi = 360/PZ*pi/180
 
+Br = 1
 K0= 10000
-f = 1e6
+f = 1000
 omega = 2*np.pi*f
 
-delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
+delta = lambda omega, sigma, mu : sqrt(2/(omega*sigma*mu))
 
-
-delta_rot = delta(omega, 1.86e6, mu_rotor)
+if(sigma_rotor>1e-12):
+    delta_rot = delta(omega, sigma_rotor, mu_rotor)
+else:
+     delta_rot = 5e-3
 delta_mag = delta(omega, sigma_magnet, mu_magnet)
-print("Delta_mag ist ", delta_mag)
 
-print("delta_rot", delta_rot)
-print(f"Frequenz = {f} und u = {nu}\n")
-r_Fe = 302.577e-3
-mp = MeshingParameters(maxh=0.1)
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag= delta_mag, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh =  sqrt(nu)*0.7), dim = 2).GenerateMesh(mp=mp))
+print(delta_rot)
+
+r_Fe = 35000.1972e-3
+mp = MeshingParameters(maxh=0.4)
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta = delta_rot, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh = 0.5), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
 
 print(mesh.GetMaterials())
@@ -218,8 +221,11 @@ def K(x,y, nu=1):
 if(tau<1):
     phase = [-1,-1]
 else:
+    print(f"phase is {d_phi}\n")
+    #phase = [1j,1j, 1j]
+    #phase = [exp(1j*d_phi),exp(1j*d_phi),exp(1j*d_phi)]
     phase = [-1, -1, -1]
-V = Periodic(H1(mesh, order = order0, dirichlet = "inner", complex=True), phase=phase)
+V = Periodic(H1(mesh, order = 3, dirichlet = "inner", complex=True), phase=phase)
 trial = V.TrialFunction()
 test = V.TestFunction()
 
@@ -232,7 +238,7 @@ a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
 c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
 
 f = LinearForm(V)
-f += K(x,y, nu)*test.Trace()*ds("outer") #*cos(2/D*x) PROBLEM weil hier periodische RBs
+f += K(x,y)*test.Trace()*ds("outer") #*cos(2/D*x) PROBLEM weil hier periodische RBs
 
 
 with TaskManager():
@@ -254,6 +260,7 @@ Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(u*1j*omega*sigmaCF, mesh, 'J')
 Draw(u*1j*omega*sigmaCF*mesh.MaterialCF({'magnets.*':1}, default=None), mesh, 'Jmag')
 Draw(K(x,y), mesh, 'K')
+print("Delta is ", delta_rot)
 
 # -----------------------------------------------------------------------------
 # ---------------------WIRBELSTROMVERLUSTE
@@ -276,7 +283,7 @@ try:
     print("P/omega = ", PZ*losses/omega)
 
     with open("simulations.txt", "a") as file:
-        file.write(f"Periodic Sim: PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A*PZ}: losses = {PZ*losses.real}, delta_magnet = {delta_mag}\n")
+        file.write(f"Periodic Sim: PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A}: losses = {PZ*losses.real}, delta_magnet = {delta_mag}, Innenradius = {r_Fe}\n")
         print("written to file")
 except Exception as e:
     print("An error occurred: ", e)

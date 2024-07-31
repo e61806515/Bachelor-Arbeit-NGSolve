@@ -61,30 +61,27 @@ def drawBnd(mesh, name="bottom|right|top|left|ibot|itop|interface|ileft|iright|n
 #
 
 
-def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
+def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh, faktor_d_rotor):
 
     print("tau = ", tau)
-    print("maxh = ", maxh * delta_mag)
-    d_Fe = 5*delta_rot
+    print("maxh =", maxh)
+    print("maxh_mag = ", maxh * delta_mag)
+    d_Fe = faktor_d_rotor*delta_rot
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
     d_phi = 360/PZ
     phi_M = d_phi*tau/2
-    #rect = WorkPlane(Axes((-r_L,-r_L,0), n=Z, h=X)).Rectangle(2*r_L, r_L).Face()
     subtract = WorkPlane(Axes((0,0,0), n=Z, h=Y)).Rotate(d_phi/2)
-    #subtract.MoveTo((r_Fe+H_M)*sin(d_phi/2*pi/180), (r_Fe+H_M)*cos(d_phi/2*pi/180))
     subtract.Line(r_L).Rotate(90)
     subtract.Arc(r_L, (360-d_phi)).Rotate(90)
     subtract.Line(r_L)
-    #subtract.Line(r_L).Rotate(180+d_phi)
-    #subtract.Line(r_L)
     subtract = subtract.Face()
 
     inner = WorkPlane().Circle(r_i).Face() - subtract
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.maxh = maxh*delta_rot
+    rotor.edges.maxh = 2*maxh*delta_rot
     rotor.name = "rotor"
     rotor = rotor - subtract
     rotor.col = (1,0,0)
@@ -104,7 +101,6 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
             magnets[i] = magnets[i].Face() #- rect
             magnets[i].maxh = delta_mag*maxh
             magnets[i].edges.name = "magnet_edge"
-            #magnets[i].vertices.maxh = 0.00001 #geht nicht??
             magnets[i].name = f"magnets_{i}" #{i:"Anweisungen zur Formatierung"} Formated String
             magnets[i].col = (0, 0, 1)
 
@@ -118,10 +114,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
 
     outer = WorkPlane().Circle(r_L).Face()
     outer.name = "air"
-
     outer = outer - subtract
-    """ else:
-        outer = outer - subtract - magnets """
     outer.edges.name = "outer"
     outer.edges
 
@@ -130,11 +123,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
 
     geo = Glue(([outer-rotor - sum(magnets), rotor- inner] + magnets))
 
-    """ else:
-        geo = Glue(([outer-magnets, rotor- inner, magnets])) """
-    #geo = Glue([geo - rect])
-    #for i in range(PZ):
-    #    geo = Glue([geo, magnets[i]])
+
     #PERIODIC EDGES
     trafo = Rotation(Axis((0,0,0), Z), -d_phi)
 
@@ -174,75 +163,50 @@ sweep = True
 # --- Parameters
 # -----------------------------------------------------------------------------
 
-PZ = 2
+##### WERTE WOLFSCHLUCKNER ######
+#PZ = 8
+#mu_air = 4e-7*np.pi
+#mu_magnet = 1.05*mu_air
+#mu_rotor = mu_air*5e2
+
+#sigma_magnet = 8e5
+#sigma_rotor =  0
+#################################
+#Dicke des Rotors ist faktor_d_rotor*delta_rot
+f_dr = 8
 
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
-
 sigma_magnet = 8e5
-sigma_rotor =  1e-12
+sigma_rotor =  0 #1.86e6
 
-order0 = 2
+order0 = 3
 tau = 1
-
 nu=9
-
+PZ = 8
 savetime = 0
 
-Br = 1
 K0= 10000
-f = 1000
+f = 1e6
 omega = 2*np.pi*f
 
-delta = lambda omega, sigma, mu : sqrt(2/(omega*sigma*mu))
+delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
 
+omega = 2*np.pi*f
+
+delta_rot = delta(omega, 1.86e6, mu_rotor)
+delta_mag = delta(omega, sigma_magnet, mu_magnet)
 #maxh ist der Koeffizient der max Elementgröße im Rotor. d.h. maxh_rotor = maxh*delta_rot
-maxh = 0.3
-mp = MeshingParameters(maxh=0.4)
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = 5e-3, delta_mag = 1e-3, r_Fe=35.1972e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh(mp=mp))
-mesh.Curve(3)
-
-
-
-#print(mesh.GetMaterials())
-#print(set(mesh.GetBoundaries()))
-# -----------------------------------------------------------------------------
-#              Coefficient Functions Sigma und Mu
-#
-#                   magnet:NdFeB mu_r = 1.04 - 1.08 und sigma = 0.667e6
-#                   rotor: Fe mu_r = 1e4 oder 5e3 u. sigma = 1.76e6 - 1.97e6 .... Welche Werte Herr Schmid??????
-#
-# -----------------------------------------------------------------------------
-
-#version_0 = CF([0, 13, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13])
-#version_1 = CF(list(range(len(mesh.GetMaterials()))))
 
 
 mu = {"air":mu_air, "rotor": mu_rotor, "magnets.*": mu_magnet }
-# [mu.update({f"magnets_{i}": mu_magnet}) for i in range(PZ)]
-# mu.update({f"magnets_{i}": mu_magnet for i in range(PZ)})
-#version_2 = CF([val[mat] if mat in val.keys() else 0 for mat in mesh.GetMaterials()])
-
 
 
 sigma = {"air":0, "rotor": sigma_rotor, "magnets.*": sigma_magnet}
 
-# [sigma.update({f"magnets_{i}":sigma_magnet}) for i in range(PZ)]
-# sigma.update({f"magnets.*": sigma_magnet })
-
-#sigma = {"air":0, "rotor": 0}
-#[sigma.update({f"magnets_{i}": 0}) for i in range(PZ)]
-# sigma_v = {"air":None, "rotor": None}
-# [sigma_v.update({f"magnets_{i}": 8e5}) for i in range(PZ)]
-# sigma_v = {"air":0, "rotor": None, "magnets.*": sigma_magnet}
-# sigma_visual = mesh.MaterialCF(sigma_v, default=None)
-
-# versions = [muCF, sigmaCF]
-# [Draw(versions[i], mesh, str(i)) for i in range(len(versions))]
-
-
-
+#A_mag INSGESAMT (d.h. *PZ=8)
+A_mags = 0.011519981499672
 
 # Phi berechnung
 def Phi(x,y):
@@ -259,32 +223,40 @@ if(tau<1):
     phase = [-1,-1]
 else:
     phase = [-1,-1,-1]
-x_val = np.logspace(0, 6, 80)
+
+#Frequenz zwischen 0 und 5e5, weil sonst das meshing zu schwierig wird und sinnlos.
+x_val = np.logspace(0, 6, 5)
 p_values=[]
-p_flat =np.loadtxt('p_flat.csv', delimiter=',')
-print(len(p_flat))
+#p_flat =np.loadtxt(f'sweep_flat_onlymag_{tau}_{nu}_PZ{PZ}.csv', delimiter=',')
+#print(len(p_flat))
+i=0
 with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 else nullcontext()) as time_file:
     with open(f'sweep_deg_onlymag_{tau}_{nu}_PZ{PZ}.csv', 'w') as file:
         for freq in x_val:
+            i=i+1
+            print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
             omega = 2*np.pi*freq
-            if(sigma_rotor>1e-12):
-                delta_rot = delta(omega, sigma_rotor, mu_rotor)
-            else:
-                delta_rot = 5e-3
 
+            delta_rot = delta(omega, 1.86e6, mu_rotor)
             delta_mag = delta(omega, sigma_magnet, mu_magnet)
             print("delta_mag = ", delta_mag)
-            print("f = ", freq)
+            print(f"delta_rot = {delta_rot}")
 
-            if delta_mag<1e-3:
-                mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = 5e-3, delta_mag = delta_mag, r_Fe=35.1972e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh(mp=mp))
-                mesh.Curve(3)
+            mp = MeshingParameters(maxh=0.1)
+            maxh = 0.5
+            if(freq > 1e5):
+                maxh = 0.6
+            if(freq > 7e5):
+                maxh = 0.7
+            #Adaptive Meshing
+            mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag = delta_mag, r_Fe=302.577e-3, tau=tau, PZ=PZ, maxh = sqrt(nu)*maxh, faktor_d_rotor = f_dr), dim = 2).GenerateMesh(mp=mp))
+            mesh.Curve(3)
 
             muCF = mesh.MaterialCF(mu, default=mu_air)
 
             sigmaCF = mesh.MaterialCF(sigma, default=0)
 
-            V = Periodic(H1(mesh, order = 2, dirichlet = "inner", complex=True), phase=phase)
+            V = Periodic(H1(mesh, order = order0, dirichlet = "inner", complex=True), phase=phase)
             trial = V.TrialFunction()
             test = V.TestFunction()
 
@@ -311,7 +283,8 @@ with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 
             J = sigmaCF * E
             p = E*Conj(J)/2
             losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))*PZ
-            file.write(f'{freq},{losses.real}\n')
+            print(f"losses are {losses.real} at freq {freq}")
+            file.write(f'{freq},{losses.real},{losses.real/A_mags}\n')
             if savetime:
                 time_file.write(f'{mesh.ne},{elapsed_time}\n')
             p_values.append(losses.real)

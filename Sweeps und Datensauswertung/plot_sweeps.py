@@ -13,11 +13,11 @@ flat3 = "sweep_flat_onlymag_1_3_PZ2.csv"
 flat5 = "sweep_flat_onlymag_1_5_PZ2.csv"
 flat7 = "sweep_flat_onlymag_1_7_PZ2.csv"
 flat9 = "sweep_flat_onlymag_1_9_PZ2.csv"
-deg1 = "sweep_deg_onlymag_1_1_PZ2.csv"
+deg1 = "sweep_deg_onlymag_1_1_PZ8.csv"
 deg3 = "sweep_deg_onlymag_1_3_PZ2.csv"
 deg5 = "sweep_deg_onlymag_1_5_PZ2.csv"
 deg7 = "sweep_deg_onlymag_1_7_PZ2.csv"
-deg9 = "sweep_deg_onlymag_1_9_PZ2.csv"
+#deg9 = "sweep_deg_onlymag_1_9_PZ2.csv"
 if time is 1:
     degtime = "sweep_deg_time_1_1.csv"
     roundtime = "sweep_round_time_1_1.csv"
@@ -54,7 +54,7 @@ deg_o5 = np.loadtxt(deg5, delimiter=',', usecols=(1,))
 
 deg_o7 = np.loadtxt(deg7, delimiter=',', usecols=(1,))
 
-deg_o9 = np.loadtxt(deg9, delimiter=',', usecols=(1,))
+#deg_o9 = np.loadtxt(deg9, delimiter=',', usecols=(1,))
 
 if time is 1:
     deg_t = np.loadtxt(degtime, delimiter=',', usecols=(1,))
@@ -70,7 +70,7 @@ plot.plot(freqs, deg_o3, color='red')
 plot.plot(freqs, deg_o5, color='green')
 plot.plot(freqs, deg_o7, color='orange')
 plot.plot(freqs, deg_o7, color='purple')
-plot.plot(freqs, deg_o9, color='blue')
+#plot.plot(freqs, deg_o9, color='blue')
 
 plot.xscale('log')
 plot.yscale('log')

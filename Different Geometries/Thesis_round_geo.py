@@ -79,7 +79,7 @@ def MakeGeometry(H_L, H_M, delta, r_Fe, Tau, PZ, maxh):
 # --- Parameters
 # -----------------------------------------------------------------------------
 
-PZ = 10
+PZ = 8
 
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
