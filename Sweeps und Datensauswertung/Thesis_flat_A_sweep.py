@@ -91,7 +91,7 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
 d_L = 2e-3
 d_M = 3*d_L
 
-nu = 9
+nu = 5
 PZ = 8
 order0=3
 tau=1
@@ -140,12 +140,13 @@ if tau <1:
         phase = [-1,-1]
 else:
         phase = [-1,-1,-1]
-x_val = np.logspace(0, 6, 5)
+n_samples = 80
+x_val = np.logspace(0, 5.39794, n_samples)
 
 p_values=[]
 i=0
 print(f'sweep_flat_Around_{tau}_{nu}.csv')
-with open(f'sweep_flat_onlymag_{tau}_{nu}_PZ{PZ}.csv', 'w') as file:
+with open(f'sweep_flat_A_onlymag_{tau}_{nu}_PZ{PZ}_{n_samples}samples.csv', 'w') as file:
         for freq in x_val:
                 i=i+1
                 print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
@@ -162,7 +163,7 @@ with open(f'sweep_flat_onlymag_{tau}_{nu}_PZ{PZ}.csv', 'w') as file:
                         maxh = 0.6
                 if(freq > 7e5):
                         maxh = 0.7
-                geo = MakeGeometry(d_M=d_M, delta_rot = delta_rot, delta_mag = delta_mag, d_L=2e-3, b=b, tau=tau, maxh = maxh, faktor_d_rotor=f_dr, maxh_mp=0.1)
+                geo = MakeGeometry(d_M=d_M, delta_rot = delta_rot, delta_mag = delta_mag, d_L=2e-3, b=b, tau=tau, maxh = (nu)**(1/3)*maxh, faktor_d_rotor=f_dr, maxh_mp=0.1)
                 mesh = geo.GenerateMesh(maxh = 0.1)
                 mesh = Mesh(mesh)
 

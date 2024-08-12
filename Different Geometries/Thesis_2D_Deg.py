@@ -165,14 +165,14 @@ mu_rotor = mu_air*5e2
 sigma_magnet = 8e5
 sigma_rotor =  0 #1.86e6
 
-order0 = 3
+order0 = 2
 tau = 1
-nu=9
+nu=7
 PZ = 8
 d_phi = 360/PZ*pi/180
 
 K0= 10000
-f = 1e6
+f = 1e5
 omega = 2*np.pi*f
 
 delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
@@ -186,7 +186,7 @@ print("delta_rot", delta_rot)
 print(f"Frequenz = {f} und u = {nu}\n")
 r_Fe = 302.577e-3
 mp = MeshingParameters(maxh=0.1)
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag= delta_mag, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh =  sqrt(nu)*0.7), dim = 2).GenerateMesh(mp=mp))
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag= delta_mag, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh =  0.5), dim = 2).GenerateMesh(mp=mp))
 mesh.Curve(3)
 
 print(mesh.GetMaterials())

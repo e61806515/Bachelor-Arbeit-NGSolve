@@ -90,7 +90,7 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
 d_L = 2e-3
 d_M = 3*d_L
 
-nu = 9
+nu = 7
 PZ = 8
 order0=3
 tau=1
@@ -101,7 +101,7 @@ print("Berechnete Fläche ist ", A_round*PZ)
 b = A_round/(d_M*tau)
 f_dr = 16
 A_mags=b*tau*d_M
-f = 1e6
+f = 345510.7294592218
 omega = 2*np.pi*f
 K0 = 10000
 mu_air = 4e-7*np.pi
@@ -121,7 +121,7 @@ delta_rot = delta(omega, 1.86e6, mu_rotor)
 
 delta_mag = delta(omega, sigma["magnet"], mu_magnet)
 maxh = sqrt(nu)*0.7
-geo = MakeGeometry(d_M=d_M, delta_rot = delta_rot, delta_mag=delta_mag, d_L=2e-3, b=b, tau=tau, maxh = maxh, faktor_d_rotor=f_dr, maxh_mp=0.1)
+geo = MakeGeometry(d_M=d_M, delta_rot = delta_rot, delta_mag=delta_mag, d_L=2e-3, b=b, tau=tau, maxh = sqrt(nu)*maxh, faktor_d_rotor=f_dr, maxh_mp=0.1)
 print(geo.GetNSplines())
 mesh = geo.GenerateMesh(maxh = 0.1)
 mesh = Mesh(mesh)

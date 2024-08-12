@@ -183,7 +183,7 @@ sigma_rotor =  0 #1.86e6
 
 order0 = 3
 tau = 1
-nu=9
+nu=1
 PZ = 8
 savetime = 0
 
@@ -224,14 +224,15 @@ if(tau<1):
 else:
     phase = [-1,-1,-1]
 
-#Frequenz zwischen 0 und 5e5, weil sonst das meshing zu schwierig wird und sinnlos.
-x_val = np.logspace(0, 6, 5)
+n_samples = 80
+#Frequenz zwischen 0 und 2.5e5, weil sonst das meshing zu schwierig wird und sinnlos.
+x_val = np.logspace(0, 5.39794, n_samples)
 p_values=[]
 #p_flat =np.loadtxt(f'sweep_flat_onlymag_{tau}_{nu}_PZ{PZ}.csv', delimiter=',')
 #print(len(p_flat))
 i=0
 with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 else nullcontext()) as time_file:
-    with open(f'sweep_deg_onlymag_{tau}_{nu}_PZ{PZ}.csv', 'w') as file:
+    with open(f'sweep_deg_onlymag_{tau}_{nu}_PZ{PZ}_{n_samples}samples.csv', 'w') as file:
         for freq in x_val:
             i=i+1
             print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
@@ -249,7 +250,7 @@ with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 
             if(freq > 7e5):
                 maxh = 0.7
             #Adaptive Meshing
-            mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag = delta_mag, r_Fe=302.577e-3, tau=tau, PZ=PZ, maxh = sqrt(nu)*maxh, faktor_d_rotor = f_dr), dim = 2).GenerateMesh(mp=mp))
+            mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag = delta_mag, r_Fe=302.577e-3, tau=tau, PZ=PZ, maxh = (nu)**(1/3)*maxh, faktor_d_rotor = f_dr), dim = 2).GenerateMesh(mp=mp))
             mesh.Curve(3)
 
             muCF = mesh.MaterialCF(mu, default=mu_air)
