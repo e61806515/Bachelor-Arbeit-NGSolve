@@ -66,7 +66,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh, faktor_d_r
     print("tau = ", tau)
     print("maxh =", maxh)
     print("maxh_mag = ", maxh * delta_mag)
-    d_Fe = faktor_d_rotor*delta_rot
+    d_Fe = max(faktor_d_rotor*delta_rot, 1e-3)
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
     d_phi = 360/PZ
@@ -81,7 +81,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh, faktor_d_r
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.edges.maxh = 2*maxh*delta_rot
+    rotor.edges.maxh = max(delta_rot*maxh, 1e-3)
     rotor.name = "rotor"
     rotor = rotor - subtract
     rotor.col = (1,0,0)
@@ -179,7 +179,7 @@ mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 sigma_magnet = 8e5
-sigma_rotor =  0 #1.86e6
+sigma_rotor =  1.86e6
 
 order0 = 3
 tau = 1
@@ -224,15 +224,15 @@ if(tau<1):
 else:
     phase = [-1,-1,-1]
 
-n_samples = 80
+n_samples = 40
 #Frequenz zwischen 0 und 2.5e5, weil sonst das meshing zu schwierig wird und sinnlos.
-x_val = np.logspace(0, 5.39794, n_samples)
+x_val = np.logspace(0, 6, n_samples)
 p_values=[]
 #p_flat =np.loadtxt(f'sweep_flat_onlymag_{tau}_{nu}_PZ{PZ}.csv', delimiter=',')
 #print(len(p_flat))
 i=0
 with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 else nullcontext()) as time_file:
-    with open(f'sweep_deg_onlymag_{tau}_{nu}_PZ{PZ}_{n_samples}samples.csv', 'w') as file:
+    with open(f'sweep_deg_rotor_{tau}_{nu}_PZ{PZ}_{n_samples}samples_1e-3.csv', 'w') as file:
         for freq in x_val:
             i=i+1
             print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
@@ -245,10 +245,6 @@ with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 
 
             mp = MeshingParameters(maxh=0.1)
             maxh = 0.5
-            if(freq > 1e5):
-                maxh = 0.6
-            if(freq > 7e5):
-                maxh = 0.7
             #Adaptive Meshing
             mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag = delta_mag, r_Fe=302.577e-3, tau=tau, PZ=PZ, maxh = (nu)**(1/3)*maxh, faktor_d_rotor = f_dr), dim = 2).GenerateMesh(mp=mp))
             mesh.Curve(3)
@@ -283,7 +279,7 @@ with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 
             E = -1j * omega * u
             J = sigmaCF * E
             p = E*Conj(J)/2
-            losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))*PZ
+            losses = Integrate(p, mesh, definedon=mesh.Materials("rotor"))*PZ
             print(f"losses are {losses.real} at freq {freq}")
             file.write(f'{freq},{losses.real},{losses.real/A_mags}\n')
             if savetime:

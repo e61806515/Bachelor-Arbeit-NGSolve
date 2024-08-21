@@ -62,7 +62,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     print("maxh = ", maxh)
     print("tau = ", tau)
     print("maxh_mag = ", maxh * delta_mag)
-    d_Fe = 8*delta_rot
+    d_Fe = max(8*delta_rot, 1e-4)
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
     d_phi = 360/PZ
@@ -81,7 +81,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.edges.maxh = 2*maxh*delta_rot
+    rotor.edges.maxh = max(maxh*delta_rot, 1e-3)
     rotor.name = "rotor"
     rotor = rotor - subtract
     rotor.col = (1,0,0)
@@ -163,16 +163,16 @@ mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 sigma_magnet = 8e5
-sigma_rotor =  0 #1.86e6
+sigma_rotor =  1.86e6
 
 order0 = 2
 tau = 1
-nu=7
+nu=9
 PZ = 8
 d_phi = 360/PZ*pi/180
 
 K0= 10000
-f = 1e5
+f = 1e3
 omega = 2*np.pi*f
 
 delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
@@ -271,7 +271,9 @@ try:
     A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
     print("Fläche = ", PZ*A)
     p = E*Conj(J)/2
-    losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
+    #losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
+    losses = Integrate(p, mesh, definedon=mesh.Materials("rotor"))
+
     print("P(u, u) = ", PZ*losses)
     print("P/omega = ", PZ*losses/omega)
 
