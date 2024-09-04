@@ -32,12 +32,9 @@ import matplotlib.pyplot as plot
 #             8-------------->------------9
 #                       (inner)
 
-def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, maxh_mp):
-        #Setze maxh für alle boundaries die nicht magnet oder rotor sind
-        d_Fe = max(faktor_d_rotor*delta_rot, 1e-4)
+def MakeGeometry(d_M, maxh_mag, maxh_rot, d_L, b, tau, faktor_d_rotor, maxh_mp):
+        d_Fe = max(faktor_d_rotor*maxh_rot, 1e-4)
         b_M = b*tau
-        maxh_rot = max(maxh*delta_rot, 1e-4)
-        maxh_mag = maxh*delta_mag
         #Add points to geometry
         #geo = WorkPlane((-b_M/2, 0, 0), n=Z, h=X).Rectangle(b_M, d_M).Face()
         #
@@ -52,7 +49,7 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
         # start-point, end-point, (boundary-condition,) domain on left side, domain on right side:
 
         if tau < 1:
-                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (7, 6, 3, 1, "inner_right", maxh_rot), (5, 4, 2, 1, "magnet", maxh*delta_mag),
+                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (7, 6, 3, 1, "inner_right", maxh_rot), (5, 4, 2, 1, "magnet", maxh_mag),
                  (3, 6, 2, 3, "magnet", maxh_rot), (3, 2, 3, 1, "inner_left", maxh_rot), (8, 9, 3, 0, "inner", maxh_rot)]
                 for p1, p2, left, right, bc, maxh_ in lines:
                         geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh=maxh_)
@@ -60,20 +57,20 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
                 air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left", maxh=maxh_mp)
                 geo.Append(["line", pnums[7], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy= rotor_l, maxh=maxh_rot)
                 geo.Append(["line", pnums[7], pnums[1]], leftdomain=1, rightdomain=0, bc="air_right", copy= air_l, maxh=maxh_mp)
-                geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=1, bc="magnet_left", maxh = maxh * delta_mag)
-                geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=1, bc="magnet_right", maxh = maxh * delta_mag)
+                geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=1, bc="magnet_left", maxh = maxh_mag)
+                geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=1, bc="magnet_right", maxh = maxh_mag)
 
         else:
-                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (5, 4, 2, 1, "magnet", maxh*delta_mag),
+                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (5, 4, 2, 1, "magnet", maxh_mag),
                  (3, 6, 2, 3, "magnet", maxh_rot), (8, 9, 3, 0, "inner", maxh_rot)]
                 for p1, p2, left, right, bc, maxh_ in lines:
                         geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh=maxh_)
                 rotor_l = geo.Append(["line", pnums[3], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh=maxh_rot)
                 air_l = geo.Append(["line", pnums[0], pnums[4]], leftdomain=1, rightdomain=0, bc="air_left", maxh=maxh_mp)
-                magnet_l = geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=0, bc="magnet_left", maxh = maxh * delta_mag)
+                magnet_l = geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=0, bc="magnet_left", maxh = maxh_mag)
                 geo.Append(["line", pnums[6], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy=rotor_l, maxh=maxh_rot)
                 geo.Append(["line", pnums[1], pnums[5]], leftdomain=0, rightdomain=1, bc="air_right", copy=air_l, maxh=maxh_mp)
-                geo.Append(["line", pnums[5], pnums[6]], leftdomain=0, rightdomain=2, bc="magnet_right", copy = magnet_l, maxh = maxh * delta_mag)
+                geo.Append(["line", pnums[5], pnums[6]], leftdomain=0, rightdomain=2, bc="magnet_right", copy = magnet_l, maxh = maxh_mag)
 
 
         geo.SetMaterial( 1, "air")
@@ -81,8 +78,8 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
         geo.SetMaterial( 3, "rotor")
 
         geo.SetDomainMaxH(1, maxh_mp)
-        geo.SetDomainMaxH(2, maxh * delta_mag)
-        geo.SetDomainMaxH(3, max(maxh*delta_rot, 1e-4))
+        geo.SetDomainMaxH(2, maxh_mag)
+        geo.SetDomainMaxH(3, max(maxh_rot, 1e-4))
 
         return geo
 
@@ -93,16 +90,17 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
 
 #tau = A/((6e-3)*tau) #liefert 0.1199773 für PZ 2 und 0.02399555 für PZ 10
 #print("b lautet ", b)
+PZ = 8
 d_L = 2e-3
 d_M = 3*d_L
 b = 60*d_L
 
-nu = 1
-PZ = 8
+nu = 7
+
 order0=3
-tau=1
+tau=5/6
 f_dr = 8
-A_mags=b*tau*d_M
+A_mag=b*tau*d_M
 f = 50
 omega = 2*np.pi*f
 K0 = 10000
@@ -111,7 +109,7 @@ mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 mu = {"air":mu_air, "rotor": mu_rotor, "magnet": mu_magnet}
 
-sigma_rotor =0
+sigma_rotor = 0
 sigma_magnet = 8e5
 sigma = {"air":0, "rotor": sigma_rotor, "magnet": sigma_magnet}
 
@@ -119,12 +117,16 @@ sigma_v = {"air":None, "rotor": None, "magnet": sigma_magnet}
 
 delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
 
-#maxh ist der Koeffizient der max Elementgröße im Rotor. d.h. maxh_rotor = maxh*delta_rot
-maxh = 0.3
+delta_rot = delta(omega, 1.86e6, mu_rotor)
 
-geo = MakeGeometry(d_M=d_M, delta_rot = 5e-3, delta_mag=1e-3, d_L=2e-3, b=b, tau=tau, maxh = maxh, faktor_d_rotor=f_dr, maxh_mp=0.1)
+delta_mag = delta(omega, sigma["magnet"], mu_magnet)
+maxh = 0.5
+maxh_rot = max(maxh*delta_rot, 1e-4)
+maxh_mag = 4*maxh_rot
+mp = maxh_mag
+geo = MakeGeometry(d_M=d_M, maxh_rot=maxh_rot, maxh_mag=maxh_mag, d_L=2e-3, b=b, tau=tau, faktor_d_rotor=f_dr, maxh_mp=mp)
 print(geo.GetNSplines())
-mesh = geo.GenerateMesh(maxh = 0.1)
+mesh = geo.GenerateMesh()
 mesh = Mesh(mesh)
 
 def Phi(x):
@@ -144,63 +146,65 @@ if tau <1:
         phase = [-1,-1]
 else:
         phase = [-1,-1,-1]
-n_samples = 80
+n_samples = 60
 x_val = np.logspace(0, 6, n_samples)
 
 p_values=[]
 i=0
 print(f'sweep_flat_tau_p_{tau}_{nu}.csv')
-with open(f'sweep_flat_tau_onlymag_{tau}_{nu}_PZ{PZ}_{n_samples}samples.csv', 'w') as file:
-        for freq in x_val:
-                i=i+1
-                print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
-                omega = 2*np.pi*freq
-                delta_rot = delta(omega, 1.86e6, mu_rotor)
-                delta_mag = delta(omega, sigma_magnet, mu_magnet)
-                print("delta_mag = ", delta_mag)
-                print(f"delta_rot = {delta_rot}")
+data = []
+for freq in x_val:
+        i=i+1
+        print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
+        omega = 2*np.pi*freq
+        delta_rot = delta(omega, 1.86e6, mu_rotor)
+        delta_mag = delta(omega, sigma_magnet, mu_magnet)
+        print("delta_mag = ", delta_mag)
+        print(f"delta_rot = {delta_rot}")
+
+        maxh = 0.5
+        maxh_rot = max(maxh*delta_rot, 1e-4)
+        maxh_mag = 4*maxh_rot
+        mp = maxh_mag
+        geo = MakeGeometry(d_M=d_M, maxh_rot=maxh_rot, maxh_mag=maxh_mag, d_L=2e-3, b=b, tau=tau, faktor_d_rotor=f_dr, maxh_mp=mp)
+        mesh = geo.GenerateMesh()
+        mesh = Mesh(mesh)
+
+        muCF = mesh.MaterialCF(mu, default=mu_air)
+
+        sigmaCF = mesh.MaterialCF(sigma, default=0)
+
+        sigma_visual = mesh.MaterialCF(sigma_v)
+
+        V = Periodic(H1(mesh, order = order0, dirichlet = "inner", complex=True), phase = phase)
+        trial = V.TrialFunction()
+        test = V.TestFunction()
 
 
-                mp = MeshingParameters(maxh=0.1)
-                maxh = 0.5
-                geo = MakeGeometry(d_M=d_M, delta_rot = delta_rot, delta_mag = delta_mag, d_L=2e-3, b=b, tau=tau, maxh = maxh, faktor_d_rotor=f_dr, maxh_mp=0.1)
-                mesh = geo.GenerateMesh(maxh = 0.1)
-                mesh = Mesh(mesh)
+        u = GridFunction(V)
 
-                muCF = mesh.MaterialCF(mu, default=mu_air)
+        a = BilinearForm(V, symmetric = True)
+        a +=  1/muCF*grad(trial)*grad(test) * dx
+        a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
 
-                sigmaCF = mesh.MaterialCF(sigma, default=0)
+        c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
 
-                sigma_visual = mesh.MaterialCF(sigma_v)
+        f = LinearForm(V)
+        f += K(x, nu=nu)*test.Trace()*ds("outer")
 
-                V = Periodic(H1(mesh, order = order0, dirichlet = "inner", complex=True), phase = phase)
-                trial = V.TrialFunction()
-                test = V.TestFunction()
-
-
-                u = GridFunction(V)
-
-                a = BilinearForm(V, symmetric = True)
-                a +=  1/muCF*grad(trial)*grad(test) * dx
-                a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
-
-                c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
-
-                f = LinearForm(V)
-                f += K(x, nu=nu)*test.Trace()*ds("outer")
-
-                with TaskManager():
-                        a.Assemble()
-                        f.Assemble()
-                        bvp = BVP(bf=a, lf=f, gf=u, pre=c)
-                        bvp.Do()
-                E = -1j * omega * u
-                J = sigmaCF * E
-                p = E*Conj(J)/2
-                losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))*PZ
-                print(f"losses are {losses.real} at freq {freq}")
-                file.write(f'{freq},{losses.real},{losses.real/A_mags}\n')
-                p_values.append(losses.real)
+        with TaskManager():
+                solvers.BVP(bf=a, lf=f, gf=u, pre=c, needsassembling=True)
+        E = -1j * omega * u
+        J = sigmaCF * E
+        p = E*Conj(J)/2
+        losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))
+        print(f"losses are {losses.real} at freq {freq}")
+        data.append((f'{freq},{losses.real},{losses.real/A_mag}\n'))
+        p_values.append(losses.real)
+        print(f"Amags = {A_mag}")
+with open(f'sweep_flat_tau_onlymag_{tau}_{nu}_PZ{PZ}_{n_samples}samples_144.5mm.csv', 'w') as file:
+        for d in data:
+            file.write(d)
 print(len(p_values), "vs ", len(x_val))
 #np.savetxt(f'sweep_flat_both_{nu}.csv', np.column_stack((x_val, p_values)), delimiter=',', fmt='%s')
 exit()

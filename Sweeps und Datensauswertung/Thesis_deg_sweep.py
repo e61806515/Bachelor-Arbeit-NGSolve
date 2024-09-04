@@ -60,17 +60,16 @@ def drawBnd(mesh, name="bottom|right|top|left|ibot|itop|interface|ileft|iright|n
 #
 #
 
-
-def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh, faktor_d_rotor):
-
+def MakeGeometry(H_L, H_M, maxh_rotor, maxh_mag, r_Fe, tau, PZ, maxh):
+    print("maxh = ", maxh)
     print("tau = ", tau)
-    print("maxh =", maxh)
     print("maxh_mag = ", maxh * delta_mag)
-    d_Fe = max(faktor_d_rotor*delta_rot, 1e-3)
+    d_Fe = 8*maxh_rotor
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
     d_phi = 360/PZ
     phi_M = d_phi*tau/2
+
     subtract = WorkPlane(Axes((0,0,0), n=Z, h=Y)).Rotate(d_phi/2)
     subtract.Line(r_L).Rotate(90)
     subtract.Arc(r_L, (360-d_phi)).Rotate(90)
@@ -81,12 +80,12 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh, faktor_d_r
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.edges.maxh = max(delta_rot*maxh, 1e-3)
+    rotor.maxh = maxh_rotor
     rotor.name = "rotor"
     rotor = rotor - subtract
     rotor.col = (1,0,0)
 
-    magnets =  []#[WorkPlane(Axes((0,0,0), n=Z, h=X))] * PZ
+    magnets =  []
     right = 360/(PZ*2)
     left = 360*(1-1/(PZ*2))
     for i in range(PZ):
@@ -99,18 +98,11 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh, faktor_d_r
             magnets[i].Line(H_M).Rotate(90)
             magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
             magnets[i] = magnets[i].Face() #- rect
-            magnets[i].maxh = delta_mag*maxh
+            magnets[i].maxh = maxh_mag
             magnets[i].edges.name = "magnet_edge"
-            magnets[i].name = f"magnets_{i}" #{i:"Anweisungen zur Formatierung"} Formated String
+            magnets[i].name = f"magnets_{i}"
             magnets[i].col = (0, 0, 1)
 
-    """ else:
-        magnets= WorkPlane().Circle(r_Fe+H_M).Face()
-        magnets.maxh = maxh*delta_mag
-        magnets = magnets - subtract
-        magnets.name = "magnets"
-        magnets.edges.name = "magnet_edge"
-        magnets.col = (0,0,1)"""
 
     outer = WorkPlane().Circle(r_L).Face()
     outer.name = "air"
@@ -179,11 +171,11 @@ mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 sigma_magnet = 8e5
-sigma_rotor =  1.86e6
+sigma_rotor =  0
 
 order0 = 3
 tau = 1
-nu=1
+nu=9
 PZ = 8
 savetime = 0
 
@@ -206,11 +198,11 @@ mu = {"air":mu_air, "rotor": mu_rotor, "magnets.*": mu_magnet }
 sigma = {"air":0, "rotor": sigma_rotor, "magnets.*": sigma_magnet}
 
 #A_mag INSGESAMT (d.h. *PZ=8)
-A_mags = 0.011519981499672
+A_mag = np.pi*((144.5e-3+6e-3)**2-(144e-3)**2)*tau/PZ
 
 # Phi berechnung
 def Phi(x,y):
-    return atan2(y,x)
+    return atan2(y,x)+np.pi/2
 
 def K(x,y, nu=1):
      return K0*exp(-1j*nu*Phi(x,y)*PZ/2)
@@ -224,7 +216,7 @@ if(tau<1):
 else:
     phase = [-1,-1,-1]
 
-n_samples = 40
+n_samples = 60
 #Frequenz zwischen 0 und 2.5e5, weil sonst das meshing zu schwierig wird und sinnlos.
 x_val = np.logspace(0, 6, n_samples)
 p_values=[]
@@ -232,59 +224,62 @@ p_values=[]
 #print(len(p_flat))
 i=0
 with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 else nullcontext()) as time_file:
-    with open(f'sweep_deg_rotor_{tau}_{nu}_PZ{PZ}_{n_samples}samples_1e-3.csv', 'w') as file:
-        for freq in x_val:
-            i=i+1
-            print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
-            omega = 2*np.pi*freq
+    data = []
+    for freq in x_val:
+        i=i+1
+        print(f"Starting {i}th Simulation at f = {freq} and nu = {nu}\n")
+        omega = 2*np.pi*freq
 
-            delta_rot = delta(omega, 1.86e6, mu_rotor)
-            delta_mag = delta(omega, sigma_magnet, mu_magnet)
-            print("delta_mag = ", delta_mag)
-            print(f"delta_rot = {delta_rot}")
+        delta_rot = delta(omega, 1.86e6, mu_rotor)
+        delta_mag = delta(omega, sigma_magnet, mu_magnet)
+        print("delta_mag = ", delta_mag)
+        print(f"delta_rot = {delta_rot}")
 
-            mp = MeshingParameters(maxh=0.1)
-            maxh = 0.5
-            #Adaptive Meshing
-            mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag = delta_mag, r_Fe=302.577e-3, tau=tau, PZ=PZ, maxh = (nu)**(1/3)*maxh, faktor_d_rotor = f_dr), dim = 2).GenerateMesh(mp=mp))
-            mesh.Curve(3)
+        maxh = 0.5
+        maxh_rotor = max(maxh*delta_rot, 1e-4)
+        maxh_mag = 4*maxh_rotor
+        mp = MeshingParameters(maxh = maxh_mag)
+        #Adaptive Meshing
+        mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, maxh_rotor=maxh_rotor, maxh_mag=maxh_mag, r_Fe=144.5e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh())
+        mesh.Curve(3)
+        print(f"Elements = {len(list(mesh.Elements(VOL)))}")
 
-            muCF = mesh.MaterialCF(mu, default=mu_air)
+        muCF = mesh.MaterialCF(mu, default=mu_air)
 
-            sigmaCF = mesh.MaterialCF(sigma, default=0)
+        sigmaCF = mesh.MaterialCF(sigma, default=0)
 
-            V = Periodic(H1(mesh, order = order0, dirichlet = "inner", complex=True), phase=phase)
-            trial = V.TrialFunction()
-            test = V.TestFunction()
+        V = Periodic(H1(mesh, order = order0, dirichlet = "inner", complex=True), phase=phase)
+        trial = V.TrialFunction()
+        test = V.TestFunction()
 
-            u = GridFunction(V)
+        u = GridFunction(V)
 
-            a = BilinearForm(V, symmetric = True)
-            a +=  1/muCF*grad(trial)*grad(test) * dx
-            a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
+        a = BilinearForm(V, symmetric = True)
+        a +=  1/muCF*grad(trial)*grad(test) * dx
+        a += 1j*omega*sigmaCF*test * trial * dx#("rotor|magnet|air") 1j*
 
-            c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
+        c = Preconditioner(a, type="direct", inverse = "sparsecholesky")
 
-            f = LinearForm(V)
-            f += K(x,y, nu)*test.Trace()*ds("outer")
-            start_time = time.time()
-            with TaskManager():
-                    a.Assemble()
-                    f.Assemble()
-                    bvp = BVP(bf=a, lf=f, gf=u, pre=c)
-                    bvp.Do()
-            print("HERE")
-            end_time = time.time()
-            elapsed_time = end_time - start_time
-            E = -1j * omega * u
-            J = sigmaCF * E
-            p = E*Conj(J)/2
-            losses = Integrate(p, mesh, definedon=mesh.Materials("rotor"))*PZ
-            print(f"losses are {losses.real} at freq {freq}")
-            file.write(f'{freq},{losses.real},{losses.real/A_mags}\n')
-            if savetime:
-                time_file.write(f'{mesh.ne},{elapsed_time}\n')
-            p_values.append(losses.real)
+        f = LinearForm(V)
+        f += K(x,y, nu)*test.Trace()*ds("outer")
+        start_time = time.time()
+        with TaskManager():
+                solvers.BVP(bf=a, lf=f, gf=u, pre=c, needsassembling=True)
+        print("HERE")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        E = -1j * omega * u
+        J = sigmaCF * E
+        p = E*Conj(J)/2
+        losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
+        #print(f"losses are {losses.real} at freq {freq}")
+        data.append((f'{freq},{losses.real},{losses.real/A_mag}\n'))
+        if savetime:
+            time_file.write(f'{mesh.ne},{elapsed_time}\n')
+        p_values.append(losses.real)
+    with open(f'sweep_deg_onlymag_{tau}_{nu}_PZ{PZ}_{n_samples}samples_144.5mm.csv', 'w') as file:
+        for d in data:
+            file.write(d)
 
 print(len(p_values), "vs ", len(x_val))
 #write x_val and p_val to one .txt file

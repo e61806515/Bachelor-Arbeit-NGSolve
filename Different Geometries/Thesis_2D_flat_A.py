@@ -31,10 +31,9 @@ import netgen.gui
 #             8-------------->------------9
 #                       (inner)
 
-def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, maxh_mp):
-        d_Fe = faktor_d_rotor*delta_rot
+def MakeGeometry(d_M, maxh_mag, maxh_rot, d_L, b, tau, faktor_d_rotor, maxh_mp):
+        d_Fe = max(faktor_d_rotor*maxh_rot, 1e-4)
         b_M = b*tau
-
         #Add points to geometry
         #geo = WorkPlane((-b_M/2, 0, 0), n=Z, h=X).Rectangle(b_M, d_M).Face()
         #
@@ -49,38 +48,38 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
         # start-point, end-point, (boundary-condition,) domain on left side, domain on right side:
 
         if tau < 1:
-                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (7, 6, 3, 1, "inner_right", 2*maxh*delta_rot), (5, 4, 2, 1, "magnet", maxh*delta_mag),
-                 (3, 6, 2, 3, "magnet", 2*maxh*delta_rot), (3, 2, 3, 1, "inner_left", 2*maxh*delta_rot), (8, 9, 3, 0, "inner", 2*maxh*delta_rot)]
+                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (7, 6, 3, 1, "inner_right", maxh_rot), (5, 4, 2, 1, "magnet", maxh_mag),
+                 (3, 6, 2, 3, "magnet", maxh_rot), (3, 2, 3, 1, "inner_left", maxh_rot), (8, 9, 3, 0, "inner", maxh_rot)]
                 for p1, p2, left, right, bc, maxh_ in lines:
                         geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh=maxh_)
-                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh=2*maxh*delta_rot)
+                rotor_l = geo.Append(["line", pnums[2], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh=maxh_rot)
                 air_l = geo.Append(["line", pnums[2], pnums[0]], leftdomain=0, rightdomain=1, bc="air_left", maxh=maxh_mp)
-                geo.Append(["line", pnums[7], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy= rotor_l, maxh=2*maxh*delta_rot)
+                geo.Append(["line", pnums[7], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy= rotor_l, maxh=maxh_rot)
                 geo.Append(["line", pnums[7], pnums[1]], leftdomain=1, rightdomain=0, bc="air_right", copy= air_l, maxh=maxh_mp)
-                geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=1, bc="magnet_left", maxh = maxh * delta_mag)
-                geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=1, bc="magnet_right", maxh = maxh * delta_mag)
+                geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=1, bc="magnet_left", maxh = maxh_mag)
+                geo.Append(["line", pnums[6], pnums[5]], leftdomain=2, rightdomain=1, bc="magnet_right", maxh = maxh_mag)
 
         else:
-                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (5, 4, 2, 1, "magnet", maxh*delta_mag),
-                 (3, 6, 2, 3, "magnet", 2*maxh*delta_rot), (8, 9, 3, 0, "inner", 2*maxh*delta_rot)]
+                lines = [ (0, 1, 0, 1, "outer", maxh_mp), (5, 4, 2, 1, "magnet", maxh_mag),
+                 (3, 6, 2, 3, "magnet", maxh_rot), (8, 9, 3, 0, "inner", maxh_rot)]
                 for p1, p2, left, right, bc, maxh_ in lines:
                         geo.Append( ["line", pnums[p1], pnums[p2]], leftdomain=left, rightdomain=right, bc = bc, maxh=maxh_)
-                rotor_l = geo.Append(["line", pnums[3], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh=2*maxh*delta_rot)
+                rotor_l = geo.Append(["line", pnums[3], pnums[8]], leftdomain=3, rightdomain=0, bc="rotor_left", maxh=maxh_rot)
                 air_l = geo.Append(["line", pnums[0], pnums[4]], leftdomain=1, rightdomain=0, bc="air_left", maxh=maxh_mp)
-                magnet_l = geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=0, bc="magnet_left", maxh = maxh * delta_mag)
-                geo.Append(["line", pnums[6], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy=rotor_l, maxh=2*maxh*delta_rot)
+                magnet_l = geo.Append(["line", pnums[4], pnums[3]], leftdomain=2, rightdomain=0, bc="magnet_left", maxh = maxh_mag)
+                geo.Append(["line", pnums[6], pnums[9]], leftdomain=0, rightdomain=3, bc="rotor_right", copy=rotor_l, maxh=maxh_rot)
                 geo.Append(["line", pnums[1], pnums[5]], leftdomain=0, rightdomain=1, bc="air_right", copy=air_l, maxh=maxh_mp)
-                geo.Append(["line", pnums[5], pnums[6]], leftdomain=0, rightdomain=2, bc="magnet_right", copy = magnet_l, maxh = maxh * delta_mag)
+                geo.Append(["line", pnums[5], pnums[6]], leftdomain=0, rightdomain=2, bc="magnet_right", copy = magnet_l, maxh = maxh_mag)
 
 
         geo.SetMaterial( 1, "air")
         geo.SetMaterial( 2, "magnet")
         geo.SetMaterial( 3, "rotor")
-        """
-        geo.SetDomainMaxH(1, 0.003)
-        geo.SetDomainMaxH(2, maxh*delta_mag)
-        geo.SetDomainMaxH(3, maxh*delta_rot)
-        """
+
+        geo.SetDomainMaxH(1, maxh_mp)
+        geo.SetDomainMaxH(2, maxh_mag)
+        geo.SetDomainMaxH(3, max(maxh_rot, 1e-4))
+
         return geo
 
 #b = np.pi * 38.19e-3      #Breite b entspricht halben Umfang, also
@@ -90,18 +89,18 @@ def MakeGeometry(d_M, delta_rot, delta_mag, d_L, b, tau, maxh, faktor_d_rotor, m
 d_L = 2e-3
 d_M = 3*d_L
 
-nu = 7
+nu = 3
 PZ = 8
 order0=3
 tau=1
-A_round = np.pi*(308.577e-3**2 - 302.577e-3**2)*(tau/PZ)
-print("Berechnete Fläche ist ", A_round*PZ)
+#A_round = np.pi*(155.7887453682e-3**2 - 149.7887453682e-3**2)*(tau/PZ)
+#print("Berechnete Fläche ist ", A_round)
 #Die Höhe des Magneten ist als Fix angenommen. Die Fläche wird auf A_round erzwungen.
 #d.h. tau*tau_p = A_round/d_M
-b = A_round/(d_M*tau)
-f_dr = 16
+b = 2*np.pi*(144.5e-3+d_M/2)/PZ
+f_dr = 8
 A_mags=b*tau*d_M
-f = 345510.7294592218
+f =  556.8813990945273
 omega = 2*np.pi*f
 K0 = 10000
 mu_air = 4e-7*np.pi
@@ -120,10 +119,13 @@ delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
 delta_rot = delta(omega, 1.86e6, mu_rotor)
 
 delta_mag = delta(omega, sigma["magnet"], mu_magnet)
-maxh = sqrt(nu)*0.7
-geo = MakeGeometry(d_M=d_M, delta_rot = delta_rot, delta_mag=delta_mag, d_L=2e-3, b=b, tau=tau, maxh = sqrt(nu)*maxh, faktor_d_rotor=f_dr, maxh_mp=0.1)
+maxh = 0.5
+maxh_rot = max(maxh*delta_rot, 1e-4)
+maxh_mag = 4*maxh_rot
+mp = maxh_mag
+geo = MakeGeometry(d_M=d_M, maxh_rot=maxh_rot, maxh_mag=maxh_mag, d_L=2e-3, b=b, tau=tau, faktor_d_rotor=f_dr, maxh_mp=mp)
 print(geo.GetNSplines())
-mesh = geo.GenerateMesh(maxh = 0.1)
+mesh = geo.GenerateMesh()
 mesh = Mesh(mesh)
 
 muCF = mesh.MaterialCF(mu, default=mu_air)
@@ -220,7 +222,7 @@ try:
     A = Integrate(1, mesh, definedon=mesh.Materials("magnet"))
     losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))
     print(f"Frequenz = {f}")
-    print("Fläche = ", A*PZ)
+    print("Fläche = ", A)
     print("P(u, u) = ", PZ*losses)
     print("P/omega = ", PZ*  losses/omega)
     print("losses/Area = ", losses/A)

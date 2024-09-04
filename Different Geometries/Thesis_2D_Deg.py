@@ -58,11 +58,11 @@ def drawBnd(mesh, name="bottom|right|top|left|ibot|itop|interface|ileft|iright|n
 #
 #
 
-def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
+def MakeGeometry(H_L, H_M, maxh_rotor, maxh_mag, r_Fe, tau, PZ, maxh):
     print("maxh = ", maxh)
     print("tau = ", tau)
     print("maxh_mag = ", maxh * delta_mag)
-    d_Fe = max(8*delta_rot, 1e-4)
+    d_Fe = 8*maxh_rotor
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
     d_phi = 360/PZ
@@ -81,7 +81,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.edges.maxh = max(maxh*delta_rot, 1e-3)
+    rotor.maxh = maxh_rotor
     rotor.name = "rotor"
     rotor = rotor - subtract
     rotor.col = (1,0,0)
@@ -103,7 +103,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
             magnets[i].Line(H_M).Rotate(90)
             magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
             magnets[i] = magnets[i].Face() #- rect
-            magnets[i].edges.maxh = maxh*delta_mag
+            magnets[i].maxh = maxh_mag
             magnets[i].edges.name = "magnet_edge"
             magnets[i].name = f"magnets_{i}"
             magnets[i].col = (0, 0, 1)
@@ -163,16 +163,15 @@ mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
 sigma_magnet = 8e5
-sigma_rotor =  1.86e6
+sigma_rotor =  0
 
-order0 = 2
-tau = 1
-nu=9
+order0 = 3
+tau = 5/6
+nu=1
 PZ = 8
-d_phi = 360/PZ*pi/180
 
 K0= 10000
-f = 1e3
+f = 1e6
 omega = 2*np.pi*f
 
 delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
@@ -184,9 +183,12 @@ print("Delta_mag ist ", delta_mag)
 
 print("delta_rot", delta_rot)
 print(f"Frequenz = {f} und u = {nu}\n")
-r_Fe = 302.577e-3
-mp = MeshingParameters(maxh=0.1)
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag= delta_mag, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh =  0.5), dim = 2).GenerateMesh(mp=mp))
+r_Fe = 149.7887453682e-3
+maxh =  0.5
+maxh_rotor = max(maxh*delta_rot, 1e-4)
+maxh_mag = 4*maxh_rotor
+mp = MeshingParameters(maxh = maxh_mag)
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, maxh_rotor=maxh_rotor, maxh_mag=maxh_mag, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh =  maxh), dim = 2).GenerateMesh())
 mesh.Curve(3)
 
 print(mesh.GetMaterials())
@@ -236,7 +238,6 @@ f += K(x,y, nu)*test.Trace()*ds("outer") #*cos(2/D*x) PROBLEM weil hier periodis
 
 
 with TaskManager():
-
         solvers.BVP(bf=a, lf=f, gf=u, pre=c, needsassembling=True )
 
 B = CF((grad(u)[1], -grad(u)[0]))       #Gradient(Komponenten) sind L2-Funktionen. Grad ist nur 2-dim,
@@ -246,6 +247,7 @@ B = CF((grad(u)[1], -grad(u)[0]))       #Gradient(Komponenten) sind L2-Funktione
 
 Draw(u) #u vom Typ gridfunction - Information über mesh bereits implizit enthalten
 Draw(B, mesh, 'B') #B vom Typ tuple, keine Information über mesh
+Draw(sigmaCF, mesh, 'materials')
 Draw(1/muCF*B, mesh, 'H')
 Draw(Norm(1/muCF*B[0]), mesh, 'Norm Hx')
 Draw(Norm(1/muCF*B[1]), mesh, 'Norm Hy')
@@ -272,7 +274,7 @@ try:
     print("Fläche = ", PZ*A)
     p = E*Conj(J)/2
     #losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
-    losses = Integrate(p, mesh, definedon=mesh.Materials("rotor"))
+    losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
 
     print("P(u, u) = ", PZ*losses)
     print("P/omega = ", PZ*losses/omega)
