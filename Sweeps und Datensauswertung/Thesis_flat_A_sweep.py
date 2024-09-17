@@ -90,15 +90,19 @@ def MakeGeometry(d_M, maxh_mag, maxh_rot, d_L, b, tau, faktor_d_rotor, maxh_mp):
 d_L = 2e-3
 d_M = 3*d_L
 
-nu = 1
+nu = 9
 PZ = 8
 order0=3
-tau=1
+tau=3/4
 #A_round = np.pi*(308.577e-3**2 - 302.577e-3**2)*(tau/PZ)
 #A_round = np.pi*(155.7887453682e-3**2 - 149.7887453682e-3**2)*(tau/PZ)
 b = 2*np.pi*(144.5e-3+d_M/2)/PZ
+print(f"b ist {b}")
+b = np.pi*((144.5e-3+d_M)**2- (144.5e-3)**2)/(PZ*d_M)
+print(f"b ist {b}")
 f_dr = 8
 A_mag=b*tau*d_M
+print(f"A ist {A_mag}")
 f = 50
 omega = 2*np.pi*f
 K0 = 10000
@@ -126,7 +130,8 @@ geo = MakeGeometry(d_M=d_M, maxh_rot=maxh_rot, maxh_mag=maxh_mag, d_L=2e-3, b=b,
 print(geo.GetNSplines())
 mesh = geo.GenerateMesh()
 mesh = Mesh(mesh)
-
+A = Integrate(1, mesh, definedon=mesh.Materials("magnet"))
+print(f"Fläche über Integration ist {A}")
 def Phi(x):
     return 2*pi*x/(PZ*b)
 
@@ -196,9 +201,10 @@ for freq in x_val:
         J = sigmaCF * E
         p = E*Conj(J)/2
         losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))
+        print(f"losses are {losses.real} at freq {freq}")
         data.append((f'{freq},{losses.real},{losses.real/A_mag}\n'))
         p_values.append(losses.real)
-        print(f"Amags = {A_mags}")
+        print(f"Amags = {A_mag}")
 with open(f'sweep_flat_A_onlymag_{tau}_{nu}_PZ{PZ}_{n_samples}samples_144.5mm.csv', 'w') as file:
         for d in data:
             file.write(d)

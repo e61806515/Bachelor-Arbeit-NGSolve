@@ -174,7 +174,7 @@ sigma_magnet = 8e5
 sigma_rotor =  0
 
 order0 = 3
-tau = 1
+tau = 3/4
 nu=9
 PZ = 8
 savetime = 0
@@ -198,7 +198,7 @@ mu = {"air":mu_air, "rotor": mu_rotor, "magnets.*": mu_magnet }
 sigma = {"air":0, "rotor": sigma_rotor, "magnets.*": sigma_magnet}
 
 #A_mag INSGESAMT (d.h. *PZ=8)
-A_mag = np.pi*((144.5e-3+6e-3)**2-(144e-3)**2)*tau/PZ
+#A_mag = np.pi*((144.5e-3+6e-3)**2-(144.5e-3)**2)*tau/PZ
 
 # Phi berechnung
 def Phi(x,y):
@@ -266,14 +266,16 @@ with (open(f'sweep_deg_time_{tau}_{nu}.csv', 'w') if tau is 1 and savetime is 1 
         with TaskManager():
                 solvers.BVP(bf=a, lf=f, gf=u, pre=c, needsassembling=True)
         print("HERE")
+        A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
+        print(f"Fläche ist {A}")
         end_time = time.time()
         elapsed_time = end_time - start_time
         E = -1j * omega * u
         J = sigmaCF * E
         p = E*Conj(J)/2
         losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
-        #print(f"losses are {losses.real} at freq {freq}")
-        data.append((f'{freq},{losses.real},{losses.real/A_mag}\n'))
+        print(f"losses are {losses.real} at freq {freq}")
+        data.append((f'{freq},{losses.real},{losses.real/A}\n'))
         if savetime:
             time_file.write(f'{mesh.ne},{elapsed_time}\n')
         p_values.append(losses.real)

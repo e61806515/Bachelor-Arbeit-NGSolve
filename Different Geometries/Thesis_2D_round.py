@@ -17,11 +17,12 @@ import netgen.gui
 #
 #
 
-def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
+def MakeGeometry(H_L, H_M, maxh_rotor, maxh_mag, r_Fe, tau, PZ, maxh):
     print("maxh = ", maxh)
     print("tau = ", tau)
+    print("delta_mag = ", delta_mag)
     print("maxh_mag = ", maxh * delta_mag)
-    d_Fe = 8*delta_rot
+    d_Fe = 8*maxh_rotor
     r_i = r_Fe - d_Fe
     r_L = r_Fe + H_L
     print("r_Fe = ", r_Fe)
@@ -34,7 +35,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
     inner.edges.name="inner"
 
     rotor = WorkPlane().Circle(r_Fe).Face() #-rect
-    rotor.edges.maxh = 2*maxh*delta_rot
+    rotor.maxh = maxh_rotor
     rotor.name = "rotor"
     rotor.col = (1,0,0)
 
@@ -43,23 +44,26 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
         d_phi = 360/PZ
         phi_M = d_phi*tau/2
         for i in range(PZ):
-            magnets[i].MoveTo(r_Fe*sin(i*d_phi*pi/180), r_Fe*cos(i*d_phi*pi/180))
-            magnets[i].Arc(r_Fe, -phi_M).Rotate(90)
-            magnets[i].Line(H_M).Rotate(90)
-            magnets[i].Arc((r_Fe + H_M), 2*phi_M).Rotate(90)
-            magnets[i].Line(H_M).Rotate(90)
-            magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
-            magnets[i] = magnets[i].Face()
-            magnets[i].edges.maxh = maxh*delta_mag
-
-            magnets[i].name = f"magnets_{i}"
-            magnets[i].col = (0, 0, 1)
+            #if (i*d_phi < 90) or (i*d_phi > 270):
+                #magnets = magnets + [WorkPlane(Axes((0,0,0), n=Z, h=X))]
+                magnets[i].MoveTo(r_Fe*sin(i*d_phi*pi/180), r_Fe*cos(i*d_phi*pi/180))
+                magnets[i].Arc(r_Fe, -phi_M).Rotate(90)
+                magnets[i].Line(H_M).Rotate(90)
+                magnets[i].Arc((r_Fe + H_M), 2*phi_M).Rotate(90)
+                magnets[i].Line(H_M).Rotate(90)
+                magnets[i].Arc(r_Fe, -phi_M).Rotate(-d_phi)
+                magnets[i] = magnets[i].Face()
+                magnets[i].maxh = maxh_mag
+                #magnets[i].vertices.maxh = 0.00001 #geht nicht??
+                magnets[i].name = f"magnets_{i}" #{i:"Anweisungen zur Formatierung"} Formated String
+                magnets[i].col = (0, 0, 1)
 
 
     else:
-        magnets = WorkPlane().Circle(r_Fe+H_M).Face()
+        magnets = WorkPlane().Circle(r_Fe+H_M)
+        magnets = magnets.Face()
         magnets.name = "magnets"
-        magnets.edges.maxh = maxh*delta_mag
+        magnets.maxh = maxh_mag
         magnets.col = (0,0,1)
 
         magnets = [magnets- rotor]
@@ -67,6 +71,7 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
 
     outer = WorkPlane().Circle(r_L).Face()
     outer.name = "air"
+    outer.maxh = maxh_mag
     outer.edges.name = "outer"
 
     outer.col = (0,1,0)
@@ -82,8 +87,6 @@ def MakeGeometry(H_L, H_M, delta_rot, delta_mag, r_Fe, tau, PZ, maxh):
 # ---------------------Parameters
 # -----------------------------------------------------------------------------
 
-PZ = 8
-
 mu_air = 4e-7*np.pi
 mu_magnet = 1.05*mu_air
 mu_rotor = mu_air*5e2
@@ -92,12 +95,32 @@ sigma_magnet = 8e5
 sigma_rotor =  0
 
 order0 = 3
-tau = 1
-nu=1
+
+savetime = 1
+
+# -----------------------------------------------------------------------------
+
+# parser = argparse.ArgumentParser()
+# parser.add_argument("--nu", type=int, default=3, help="Value of nu")
+
+# parser.add_argument("--PZ", type=int, default=12, help="Number of pole pairs")
+
+# parser.add_argument("--tau", type=int, default=1, help="Value of tau")
+# args = parser.parse_args()
+
+# nu = args.nu
+# PZ = args.PZ
+# tau = args.tau
+# -----------------------------------------------------------------------------
+
+
+
+nu = 1
 PZ = 8
+tau = 1
 
 K0= 10000
-f = 1000000
+f = 1e3
 omega = 2*np.pi*f
 
 delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
@@ -109,9 +132,12 @@ print("Delta_mag ist ", delta_mag)
 
 print("delta_rot", delta_rot)
 print(f"Frequenz = {f} und u = {nu}\n")
-r_Fe = 302.577e-3
-mp = MeshingParameters(maxh=0.1)
-mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, delta_rot = delta_rot, delta_mag= delta_mag, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh =  sqrt(nu)*0.7), dim = 2).GenerateMesh(mp=mp))
+r_Fe = 144.5e-3
+maxh = 0.5
+maxh_rotor = max(maxh*delta_rot, 1e-4)
+maxh_mag = 4*maxh_rotor
+mp = MeshingParameters(maxh = maxh_mag)
+mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, maxh_rotor=maxh_rotor, maxh_mag=maxh_mag, r_Fe=144.5e-3, tau=tau, PZ=PZ, maxh = maxh), dim = 2).GenerateMesh())
 mesh.Curve(3)
 
 print(mesh.GetMaterials())
@@ -194,10 +220,10 @@ J = sigmaCF * E
 
 p = E*Conj(J)/2
 try:
-    A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
+    A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))/PZ
     print("Fläche = ", A)
     losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
-    print("P(u, u) = ", losses)
+    print("P(u, u) = ", losses/PZ)
     print("P/omega = ", losses/omega)
 
 

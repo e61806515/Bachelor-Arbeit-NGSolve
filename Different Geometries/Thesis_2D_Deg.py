@@ -7,6 +7,7 @@ from netgen.meshing import MeshingParameters, IdentificationType
 import numpy as np
 import math as math
 import netgen.gui
+import time
 
 
 ############################################
@@ -111,6 +112,7 @@ def MakeGeometry(H_L, H_M, maxh_rotor, maxh_mag, r_Fe, tau, PZ, maxh):
 
     outer = WorkPlane().Circle(r_L).Face()
     outer.name = "air"
+    outer.maxh = maxh_mag
     outer = outer - subtract
     outer.edges.name = "outer"
     outer.edges
@@ -165,17 +167,22 @@ mu_rotor = mu_air*5e2
 sigma_magnet = 8e5
 sigma_rotor =  0
 
-order0 = 3
-tau = 5/6
-nu=1
-PZ = 8
+c_Pz = 1
+c_r = 1
 
+order0 = 3
+tau = 1
+nu=1
+PZ = c_Pz*8
+r_Fe = c_r * 144.5e-3
 K0= 10000
-f = 1e6
+f = 150
 omega = 2*np.pi*f
 
 delta = lambda omega, sigma, mu : sqrt(2/(nu*omega*sigma*mu))
-
+print("Test Bogenlängen")
+print("Bogenlänge 1 = ", 2*np.pi*144.5e-3/8)
+print("Bogenlänge 2 = ", 2*np.pi*r_Fe/PZ)
 
 delta_rot = delta(omega, 1.86e6, mu_rotor)
 delta_mag = delta(omega, sigma_magnet, mu_magnet)
@@ -183,11 +190,13 @@ print("Delta_mag ist ", delta_mag)
 
 print("delta_rot", delta_rot)
 print(f"Frequenz = {f} und u = {nu}\n")
-r_Fe = 149.7887453682e-3
+
 maxh =  0.5
 maxh_rotor = max(maxh*delta_rot, 1e-4)
 maxh_mag = 4*maxh_rotor
 mp = MeshingParameters(maxh = maxh_mag)
+print("GOOOOOOOO\n\n\n")
+start_time = time.time()
 mesh = Mesh(OCCGeometry(MakeGeometry(H_L=8e-3, H_M=6e-3, maxh_rotor=maxh_rotor, maxh_mag=maxh_mag, r_Fe = r_Fe, tau=tau, PZ=PZ, maxh =  maxh), dim = 2).GenerateMesh())
 mesh.Curve(3)
 
@@ -208,7 +217,7 @@ sigmaCF = mesh.MaterialCF(sigma, default=0)
 
 # Phi berechnung
 def Phi(x,y):
-    return atan2(y,x)+np.pi/2
+    return atan2(y,x)
 
 def K(x,y, nu=1):
      return K0*exp(-1j*nu*PZ*Phi(x,y)/2)
@@ -239,7 +248,10 @@ f += K(x,y, nu)*test.Trace()*ds("outer") #*cos(2/D*x) PROBLEM weil hier periodis
 
 with TaskManager():
         solvers.BVP(bf=a, lf=f, gf=u, pre=c, needsassembling=True )
-
+A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
+end_time = time.time()
+elapsed_time = end_time - start_time
+print(f"Elapsed time = {elapsed_time}")
 B = CF((grad(u)[1], -grad(u)[0]))       #Gradient(Komponenten) sind L2-Funktionen. Grad ist nur 2-dim,
                                         #weil Geometrie nur 2-dim
 
@@ -271,16 +283,15 @@ J = sigmaCF * E
 
 try:
     A = Integrate(1, mesh, definedon=mesh.Materials("magnets.*"))
-    print("Fläche = ", PZ*A)
+    print("Fläche = ", A)
     p = E*Conj(J)/2
     #losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
     losses = Integrate(p, mesh, definedon=mesh.Materials("magnets.*"))
 
-    print("P(u, u) = ", PZ*losses)
-    print("P/omega = ", PZ*losses/omega)
+    print("P(u, u) = ", losses)
 
     with open("simulations.txt", "a") as file:
-        file.write(f"Periodic Sim: PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A*PZ}: losses = {PZ*losses.real}, delta_magnet = {delta_mag}\n")
+        file.write(f"Periodic Sim: c_r = {c_r}, c_Pz = {c_Pz}, PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A}: losses = {losses.real}, delta_magnet = {delta_mag}\n")
         print("written to file")
 except Exception as e:
     print("An error occurred: ", e)

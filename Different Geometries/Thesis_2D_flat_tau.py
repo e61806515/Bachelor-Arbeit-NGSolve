@@ -94,11 +94,11 @@ b= 120e-3
 nu = 1
 
 order0=3
-tau=5/6
+tau=1
 f_dr = 8
 A_mags=b*tau*d_M
 print(f"A_magnet = {A_mags}")
-f =  1e6
+f =  1e5
 print(f"frequenz = {f}, nu = {nu}")
 omega = 2*np.pi*f
 K0 = 10000
@@ -145,7 +145,7 @@ def Phi(x):
     return 2*pi*x/(PZ*b)
 
 def K(x, nu=1):
-      K = K0*exp(-1j*np.pi*x*nu/(b))
+      K = K0*exp(1j*np.pi*(x-b/2)*nu/(b))
       return K
 """
 def K(x, nu=1):
@@ -200,6 +200,7 @@ Draw(Norm(1/muCF*B[1]), mesh, 'Norm Hy')
 Draw(Norm(B[0]), mesh, 'Norm Bx')
 Draw(Norm(B[1]), mesh, 'Norm By')
 Draw(u*1j*omega*sigmaCF, mesh, 'J')
+Draw(u*1j*omega*sigmaCF*mesh.MaterialCF({'magnet':1}, default=None), mesh, 'Jmag')
 #Draw(CF([1,2,3]), mesh, "materials")
 Draw(K(x), mesh, 'K')
 

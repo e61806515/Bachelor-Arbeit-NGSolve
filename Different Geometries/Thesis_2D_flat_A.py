@@ -88,19 +88,21 @@ def MakeGeometry(d_M, maxh_mag, maxh_rot, d_L, b, tau, faktor_d_rotor, maxh_mp):
 
 d_L = 2e-3
 d_M = 3*d_L
-
-nu = 3
-PZ = 8
+c_Pz = 10
+c_r = 10
+nu = 1
+PZ = c_Pz*8
 order0=3
 tau=1
 #A_round = np.pi*(155.7887453682e-3**2 - 149.7887453682e-3**2)*(tau/PZ)
 #print("Berechnete Fläche ist ", A_round)
 #Die Höhe des Magneten ist als Fix angenommen. Die Fläche wird auf A_round erzwungen.
 #d.h. tau*tau_p = A_round/d_M
-b = 2*np.pi*(144.5e-3+d_M/2)/PZ
+r_R = c_r*144.5e-3
+b = np.pi*((r_R+d_M)**2- (r_R)**2)/(PZ*d_M)
 f_dr = 8
 A_mags=b*tau*d_M
-f =  556.8813990945273
+f =  1e3
 omega = 2*np.pi*f
 K0 = 10000
 mu_air = 4e-7*np.pi
@@ -221,10 +223,12 @@ p = sigma_visual*omega*omega*u*Conj(u)/2
 try:
     A = Integrate(1, mesh, definedon=mesh.Materials("magnet"))
     losses = Integrate(p, mesh, definedon=mesh.Materials("magnet"))
+    print(f"Losses Mag are = {losses}")
+    losses = Integrate(p, mesh)
+    print(f"Losses Total are = {losses}")
     print(f"Frequenz = {f}")
     print("Fläche = ", A)
-    print("P(u, u) = ", PZ*losses)
-    print("P/omega = ", PZ*  losses/omega)
+    print("P(u, u) = ", losses)
     print("losses/Area = ", losses/A)
     print("delta_r = ", delta_rot)
     print("delta_m = ", delta_mag)
@@ -233,7 +237,7 @@ except Exception as e:
 
 try:
     with open("simulations.txt", "a") as file:
-        file.write(f"Flat Sim A_mag: PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A*PZ}: losses = {losses.real}, delta_magnet = {delta_mag} \n")
+        file.write(f"Flat Sim A_mag: c_r = {c_r}, c_Pz = {c_Pz}, PZ = {PZ}, Tau = {tau}, omega = {omega}, A_magnet = {A}, losses = {losses.real}, delta_magnet = {delta_mag}, radius Rotor = {r_R} \n")
         print("written to file")
 except Exception as e:
     print("An error occurred while writing to file: ", e)

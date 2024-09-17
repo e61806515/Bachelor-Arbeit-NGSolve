@@ -222,3 +222,133 @@ Flat Sim A_mag: PZ = 8, Tau = 0.8333333333333334, omega = 6283185.307179586, A_m
 Periodic Sim: PZ = 8, Tau = 0.8333333333333334, omega = 6283185.307179586, A_magnet = 0.004800000000004399: losses = 135811.7077708548, delta_magnet = 0.0005491367241340465
 Flat Sim A_mag: PZ = 8, Tau = 1, omega = 3498.9890246323453, A_magnet = 0.0057599999999992406: losses = 185.76406213052772, delta_magnet = 0.01343502581701301 
 Flat Sim A_mag: PZ = 8, Tau = 1, omega = 3498.9890246323453, A_magnet = 0.0057599999999992406: losses = 185.7655635075142, delta_magnet = 0.01343502581701301 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 3498.9890246323453, A_magnet = 0.005560618996853914: losses = 158.91279402080886, delta_magnet = 0.01343502581701301 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 3498.9890246323453, A_magnet = 0.005560618996853914: losses = 158.91279729716462, delta_magnet = 0.01343502581701301 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 3498.9890246323453, A_magnet = 0.005560618996853914: losses = 158.9127946207588, delta_magnet = 0.01343502581701301 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 3498.9890246323453, A_magnet = 0.005560618996853914: losses = 158.9127940080515, delta_magnet = 0.01343502581701301 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 62831853.071795866, A_magnet = 0.005541769440932365: losses = 32312.357348925554, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 62831853.071795866, A_magnet = 0.010970441546335486: losses = 77028.6333918487, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.288 
+Flat Sim A_mag: PZ = 16, Tau = 1, omega = 62831853.071795866, A_magnet = 0.010970441546335533: losses = 31822.522494035216, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.288 
+Flat Sim A_mag: PZ = 16, Tau = 1, omega = 62831853.071795866, A_magnet = 0.00554176944093238: losses = 8398.35452123394, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 16, Tau = 1, omega = 62831853.071795866, A_magnet = 0.00831265416139859: losses = 20192.00214245454, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 24, Tau = 1, omega = 62831853.071795866, A_magnet = 0.00831265416139857: losses = 8398.354524534438, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 24, Tau = 1, omega = 62831853.071795866, A_magnet = 0.005541769440932374: losses = 2334.9861135028586, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 32, Tau = 1, omega = 62831853.071795866, A_magnet = 0.008312654161398574: losses = 3569.833992433718, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 32, Tau = 1, omega = 62831853.071795866, A_magnet = 0.01108353888186476: losses = 8398.3545229294, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 32, Tau = 1, omega = 62831853.071795866, A_magnet = 0.01108353888186476: losses = 8398.354520762494, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: PZ = 32, Tau = 1, omega = 62831853.071795866, A_magnet = 0.016399113651738694: losses = 19694.712373381648, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.43199999999999994 
+Flat Sim A_mag: PZ = 32, Tau = 1, omega = 62831853.071795866, A_magnet = 0.02182778575714186: losses = 31577.665829893045, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.576 
+Flat Sim A_mag: PZ = 40, Tau = 1, omega = 62831853.071795866, A_magnet = 0.02182778575714172: losses = 22032.49087282462, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.576 
+Flat Sim A_mag: PZ = 32, Tau = 1, omega = 62831853.071795866, A_magnet = 32: losses = 31577.665826664703, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.576 
+Flat Sim A_mag: c_r = 1, c_Pz = 5, PZ = 40, Tau = 1, omega = 62831853.071795866, A_magnet = 0.00013854423602330932, losses = 193.89285139315635, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: c_r = 5, c_Pz = 5, PZ = 40, Tau = 1, omega = 62831853.071795866, A_magnet = 0.0006814114465636262, losses = 31528.562518665778, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.72 
+Flat Sim A_mag: c_r = 5, c_Pz = 1, PZ = 8, Tau = 1, omega = 62831853.071795866, A_magnet = 0.0034070572328181404, losses = 202210.2648800853, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.72 
+Flat Sim A_mag: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 62831853.071795866, A_magnet = 0.0006927211801165456, losses = 32312.357345179367, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.144 
+Flat Sim A_mag: c_r = 5, c_Pz = 10, PZ = 80, Tau = 1, omega = 62831853.071795866, A_magnet = 0.00034070572328181287, losses = 8045.912592132279, delta_magnet = 5.7884093170238055e-05, radius Rotor = 0.72 
+Flat Sim A_mag: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 62831853.071795866, A_magnet = 0.0006799977298695079, losses = 31431.061769703356, delta_magnet = 5.7884093170238055e-05, radius Rotor = 1.44 
+Flat Sim A_mag: c_r = 100, c_Pz = 100, PZ = 800, Tau = 1, omega = 62831853.071795866, A_magnet = 0.0006787253848448024, losses = 31342.740619743763, delta_magnet = 5.7884093170238055e-05, radius Rotor = 14.399999999999999 
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746075596: losses = 10423.044862084962, delta_magnet = 0.00018304557471134886
+Periodic Sim: c_r = 5, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0034188382052691463: losses = 64675.70211948249, delta_magnet = 0.00018304557471134886
+Periodic Sim: c_r = 5, c_Pz = 5, PZ = 40, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006837676410538437: losses = 9664.247921732449, delta_magnet = 0.00018304557471134886
+Periodic Sim: c_r = 5, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0003418838205269131: losses = 2215.60174126913, delta_magnet = 0.00018304557471134886
+Periodic Sim: c_r = 1, c_Pz = 5, PZ = 40, Tau = 1, omega = 6283185.307179586, A_magnet = 0.00013901547492150708: losses = 42.01233528361988, delta_magnet = 0.00018304557471134886
+Periodic Sim: c_r = 100, c_Pz = 100, PZ = 800, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006810815793353436: losses = 9485.267090578362, delta_magnet = 0.00018304557471134886
+Periodic Sim: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006823539243597139: losses = 9569.985919253937, delta_magnet = 0.00018304557471134886
+Flat Sim A_mag: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283.185307179586, A_magnet = 0.012227706926302196, losses = 21283.43828129418, delta_magnet = 0.017365227951071417, radius Rotor = 1.4449999999999998 
+Periodic Sim: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006823539243597139: losses = 9569.98591925418, delta_magnet = 0.00018304557471134886
+Flat Sim A_mag: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283.185307179586, A_magnet = 0.012227706926302196, losses = 21283.438308620178, delta_magnet = 0.017365227951071417, radius Rotor = 1.4449999999999998 
+Periodic Sim: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006823539243597139: losses = 9569.98591925383, delta_magnet = 0.00018304557471134886
+Periodic Sim: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006823539243597139: losses = 12957.219245880811, delta_magnet = 0.0005491367241340465
+Periodic Sim: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006823539243597139: losses = 12957.219245880799, delta_magnet = 0.0005491367241340465
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746075596: losses = 13787.928052542658, delta_magnet = 0.0005491367241340465
+Flat Sim A_mag: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006823539243597032, losses = 1140.2439770429057, delta_magnet = 0.017365227951071417, radius Rotor = 1.4449999999999998 
+Flat Sim A_mag: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746067399, losses = 1164.154346463457, delta_magnet = 0.017365227951071417, radius Rotor = 0.1445 
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438208: losses = 1245.7891085658853, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746067399, losses = 1164.154330812932, delta_magnet = 0.017365227951071417, radius Rotor = 0.1445 
+Periodic Sim: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006823539243597655: losses = 1148.271059233829, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006823539243597032, losses = 1140.2439783101163, delta_magnet = 0.017365227951071417, radius Rotor = 1.4449999999999998 
+Periodic Sim: c_r = 30, c_Pz = 30, PZ = 240, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006814114465634827: losses = 1141.1407068823205, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 30, c_Pz = 30, PZ = 240, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006814114465636727, losses = 1138.4684565313653, delta_magnet = 0.017365227951071417, radius Rotor = 4.335 
+Periodic Sim: c_r = 50, c_Pz = 50, PZ = 400, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006812229510045777: losses = 1139.7162149446701, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 50, c_Pz = 50, PZ = 400, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006812229510044242, losses = 1138.113280067925, delta_magnet = 0.017365227951071417, radius Rotor = 7.225 
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438208: losses = 1245.7891096434032, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746067399, losses = 1164.1543323906556, delta_magnet = 0.017365227951071417, radius Rotor = 0.1445 
+Flat Sim A_mag: c_r = 20, c_Pz = 20, PZ = 160, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006816470660125981, losses = 1138.9123941158612, delta_magnet = 0.017365227951071417, radius Rotor = 2.8899999999999997 
+Periodic Sim: c_r = 20, c_Pz = 20, PZ = 160, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006816470660126941: losses = 1142.9220664473037, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 5, c_Pz = 5, PZ = 40, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006837676410538157, losses = 1142.9061016837522, delta_magnet = 0.017365227951071417, radius Rotor = 0.7224999999999999 
+Periodic Sim: c_r = 20, c_Pz = 20, PZ = 160, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006816470660126941: losses = 1142.9220690089671, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 2, c_Pz = 2, PZ = 16, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006880087911361648, losses = 1150.8842279971134, delta_magnet = 0.017365227951071417, radius Rotor = 0.289 
+Periodic Sim: c_r = 2, c_Pz = 2, PZ = 16, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006880087911411389: losses = 1191.3261432099646, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 2, c_Pz = 2, PZ = 16, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006880087911361648, losses = 1150.8842274193014, delta_magnet = 0.017365227951071417, radius Rotor = 0.289 
+Flat Sim A_mag: c_r = 2, c_Pz = 2, PZ = 16, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006880087911361648, losses = 1150.8842200376328, delta_magnet = 0.017365227951071417, radius Rotor = 0.289 
+Periodic Sim: c_r = 2, c_Pz = 2, PZ = 16, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006880087911411389: losses = 1191.3261425293624, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 3, c_Pz = 3, PZ = 24, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006856525966459726, losses = 1146.4534492024734, delta_magnet = 0.017365227951071417, radius Rotor = 0.4335 
+Periodic Sim: c_r = 3, c_Pz = 3, PZ = 24, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006856525966474244: losses = 1173.3300374222622, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 5, c_Pz = 5, PZ = 40, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006837676410538157, losses = 1142.906125455323, delta_magnet = 0.017365227951071417, radius Rotor = 0.7224999999999999 
+Periodic Sim: c_r = 5, c_Pz = 5, PZ = 40, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006837676410541485: losses = 1158.991118598818, delta_magnet = 0.017365227951071417
+Flat Sim A_mag: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006823539243597032, losses = 1140.2439785887427, delta_magnet = 0.017365227951071417, radius Rotor = 1.4449999999999998 
+Periodic Sim: c_r = 10, c_Pz = 10, PZ = 80, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006823539243597655: losses = 1148.2710583493267, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438208: losses = 1245.7891092766104, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746075596: losses = 13787.928105490242, delta_magnet = 0.0005491367241340465
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746075596: losses = 13787.928165521746, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 628.3185307179587, A_magnet = 0.044484952201527234: losses = 23790.55707599022, delta_magnet = 0.054913672413404654
+Periodic Sim: PZ = 8, Tau = 1, omega = 628.3185307179587, A_magnet = 0.044484952201527234: losses = 23790.557079517836, delta_magnet = 0.054913672413404654
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746075596: losses = 13787.92811240779, delta_magnet = 0.0005491367241340465
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 628.3185307179587, A_magnet = 0.0006950773779418181: losses = 371.72745618765134, delta_magnet = 0.054913672413404654
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 628.3185307179587, A_magnet = 0.0006950773779418181: losses = 371.72745408461793, delta_magnet = 0.054913672413404654
+Periodic Sim: PZ = 8, Tau = 1, omega = 628.3185307179587, A_magnet = 0.044484952201527234: losses = 23790.55708628432, delta_magnet = 0.054913672413404654
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 62831.853071795864, A_magnet = 0.0006950773746075596: losses = 1434.0789836277931, delta_magnet = 0.0054913672413404654
+Periodic Sim: PZ = 8, Tau = 1, omega = 62831.853071795864, A_magnet = 0.04448495201842193: losses = 91515.21708432026, delta_magnet = 0.0054913672413404654
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.04448495201842193: losses = 933493.4481614446, delta_magnet = 0.0005491367241340465
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746075596: losses = 13787.928127294676, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0055606190023027415: losses = 933493.4481614191, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.005560618998227973: losses = 895710.7354422515, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.005560618997387577: losses = 884204.505019872, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.005560618997096761: losses = 882481.3531416461, delta_magnet = 0.0005491367241340465
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746277416: losses = 13786.546850605913, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.005560618997159775: losses = 79730.503041859, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746277416: losses = 13786.546851963134, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.005560618997159775: losses = 79730.50288334295, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 4, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0013901547492151303: losses = 27651.41067974634, delta_magnet = 0.0005491367241340465
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.005560618997159775: losses = 79730.50301293161, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438208: losses = 1245.7891091754923, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.0005213080309839737: losses = 1625.2828161540297, delta_magnet = 0.017365227951071417
+Periodic Sim: PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.004170464247867474: losses = 104018.1009135082, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.0005213080309839737: losses = 1625.2828161539528, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.0005213080309839731: losses = 1625.2828139982844, delta_magnet = 0.017365227951071417
+Periodic Sim: PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.004170464247867472: losses = 104018.1000918089, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.0005213080309839731: losses = 1625.2828139982564, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.0005213080309839731: losses = 1625.2828139983774, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6.283185307179586, A_magnet = 0.0006950775412685092: losses = 0.0568499389568738, delta_magnet = 0.5491367241340466
+Periodic Sim: PZ = 8, Tau = 1, omega = 6.283185307179586, A_magnet = 0.00556061994820817: losses = 3.6383966960762217, delta_magnet = 0.5491367241340466
+Periodic Sim: PZ = 8, Tau = 0.75, omega = 6.283185307179586, A_magnet = 0.004170465083580154: losses = 2.6710860923172635, delta_magnet = 0.5491367241340466
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 0.75, omega = 6.283185307179586, A_magnet = 0.0005213081556690481: losses = 0.041735717323138154, delta_magnet = 0.5491367241340466
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.0005213080309839731: losses = 1625.2828139982366, delta_magnet = 0.017365227951071417
+Periodic Sim: PZ = 8, Tau = 0.75, omega = 6283.185307179586, A_magnet = 0.004170464247867472: losses = 104018.10009180785, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438215: losses = 1245.7890996608996, delta_magnet = 0.017365227951071417
+Periodic Sim: PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0055606189971597695: losses = 79730.50306756777, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438215: losses = 1245.7891090414057, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438215: losses = 1245.7891144438236, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283.185307179586, A_magnet = 0.0006950773746438215: losses = 1245.7891069183615, delta_magnet = 0.017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 6283185.307179586, A_magnet = 0.0006950773746075594: losses = 13787.928077337272, delta_magnet = 0.0005491367241340465
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0006950773746075594: losses = 4379.6619806562485, delta_magnet = 0.0017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0006950773746075594: losses = 3806.6031816097593, delta_magnet = 0.0007765966028675015
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048416879496, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.0484168794965, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048416847631, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048416876293, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.0484169597385, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.0484172685165, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 99644.94287690852, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 186.08122432599805, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 186.08122432624305, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048416895054, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048416856521, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048416810759, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048453747811, delta_magnet = 0.0017365227951071417 
+Flat Sim A_mag: PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0057599999999999475: losses = 4306.048413031276, delta_magnet = 0.0017365227951071417 
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 628318.5307179586, A_magnet = 0.0006950773746075594: losses = 4377.096475518279, delta_magnet = 0.0017365227951071417
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 942.4777960769379, A_magnet = 0.0006950773762492978: losses = 410.4336142611289, delta_magnet = 0.04483682577173009
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 942.4777960769379, A_magnet = 0.0006950773762492978: losses = 410.43361425814, delta_magnet = 0.04483682577173009
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 942.4777960769379, A_magnet = 0.0006950773762492978: losses = 606.61229829325, delta_magnet = 0.04483682577173009
+Periodic Sim: c_r = 1, c_Pz = 1, PZ = 8, Tau = 1, omega = 942.4777960769379, A_magnet = 0.0006950773762492978: losses = 606.6123068802528, delta_magnet = 0.04483682577173009

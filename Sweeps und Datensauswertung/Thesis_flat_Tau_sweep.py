@@ -95,10 +95,10 @@ d_L = 2e-3
 d_M = 3*d_L
 b = 60*d_L
 
-nu = 7
+nu = 9
 
 order0=3
-tau=5/6
+tau=3/4
 f_dr = 8
 A_mag=b*tau*d_M
 f = 50
